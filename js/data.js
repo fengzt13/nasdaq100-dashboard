@@ -2534,8 +2534,15 @@ window.NDX_DATA = {
  ],
  "pe": {
   "totalMcap": 39713770000000,
+  "mcapAsOf": "2026-08-28",
   "ttmNi": 1589109809000,
-  "pe": 24.991205626621362
+  "ttmNiCount": 102,
+  "peTtm": 24.991205626621362,
+  "latestQNi": 551433309000,
+  "latestQCount": 102,
+  "latestQDate": "2026-08-01",
+  "annualizedNi": 2205733236000,
+  "peAnnualized": 18.004792851568567
  },
  "mag7": {
   "meta": {

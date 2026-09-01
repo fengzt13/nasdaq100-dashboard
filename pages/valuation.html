@@ -48,7 +48,10 @@
     </section>
 
     <div class="note">
-      <strong>口径说明：</strong>加总法 PE = 全部成分股总市值 / 滚动四季度净利润总和，反映市值加权估值；Siblis 官方 PE 基于指数官方 EPS（含权重）。两者差异正常，均非投资建议。
+      <strong>口径说明：</strong><br>
+      · PE-TTM（加总法）= 全部成分股总市值快照 ÷ 滚动四季度净利润加总。市值截至最新交易日，利润覆盖近4个季度（各公司财季错位近似对齐）。<br>
+      · PE-季度年化 = 总市值快照 ÷ 最新单季度净利 × 4。市值与利润时点更接近，但单季度波动大（如季节性强的公司）。<br>
+      · PE-TTM（Siblis）基于指数官方 EPS（含权重），与加总法口径不同。三者均非投资建议。
     </div>
   </div>
 </main>
@@ -60,15 +63,20 @@
   var peInfo = D.pe;
   var siblisLast = D.siblis_pe[D.siblis_pe.length - 1];
   document.getElementById('heroStats').innerHTML =
-    '<span class="badge badge-accent">加总法 PE ' + (peInfo.pe ? peInfo.pe.toFixed(1) : '—') + '</span> ' +
+    '<span class="badge badge-accent">PE-TTM ' + (peInfo.peTtm ? peInfo.peTtm.toFixed(1) : '—') + '</span> ' +
+    '<span class="badge">PE-季度年化 ' + (peInfo.peAnnualized ? peInfo.peAnnualized.toFixed(1) : '—') + '</span> ' +
     '<span class="badge">Siblis官方 ' + (siblisLast ? siblisLast[1].toFixed(1) : '—') + '</span>';
 
   // ===== 当前估值卡片 =====
   var peCards = [
-    { label: 'PE-TTM（加总法）', value: peInfo.pe ? peInfo.pe.toFixed(1) : '—', sub: '总市值 ' + Dash.fmtUSD(peInfo.totalMcap) },
-    { label: 'TTM净利（加总）', value: Dash.fmtB(peInfo.ttmNi), sub: '滚动四季度净利总和' },
-    { label: 'PE-TTM（Siblis）', value: siblisLast ? siblisLast[1].toFixed(1) : '—', sub: '截至 ' + (siblisLast ? siblisLast[0].slice(0,7) : '') },
-    { label: '指数点位', value: D.index[D.index.length-1] ? D.index[D.index.length-1][1].toFixed(0) : '—', sub: '纳指100最新月末收盘' }
+    { label: 'PE-TTM（加总法）', value: peInfo.peTtm ? peInfo.peTtm.toFixed(1) : '—',
+      sub: '市值' + Dash.fmtB(peInfo.totalMcap) + ' / TTM净利' + Dash.fmtB(peInfo.ttmNi) },
+    { label: 'PE-季度年化', value: peInfo.peAnnualized ? peInfo.peAnnualized.toFixed(1) : '—',
+      sub: '市值' + Dash.fmtB(peInfo.totalMcap) + ' / 最新Q净利×4=' + Dash.fmtB(peInfo.annualizedNi) },
+    { label: 'PE-TTM（Siblis）', value: siblisLast ? siblisLast[1].toFixed(1) : '—',
+      sub: '截至' + (siblisLast ? siblisLast[0].slice(0,7) : '') + ' · 指数官方EPS口径' },
+    { label: '指数点位', value: D.index[D.index.length-1] ? D.index[D.index.length-1][1].toFixed(0) : '—',
+      sub: '纳指100最新月末收盘 · 截至' + D.meta.asOf }
   ];
   document.getElementById('peCards').innerHTML = peCards.map(function (c) {
     return '<div class="card card-hover">' +
