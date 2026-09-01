@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%233b82f6%22/><text x=%2250%22 y=%2268%22 font-size=%2240%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>NDX</text></svg>">
+  <title>科技七姐妹 · 纳指100大数据追踪看板</title>
+  <meta name="description" content="纳指100七姐妹（AAPL/MSFT/NVDA/AMZN/GOOGL/META/TSLA）市值占比、营收/净利/PE-TTM 十年趋势。">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/echarts.min.js"></script>
+  <script src="../js/site.js"></script>
+</head>
+<body>
+<main>
+  <div class="container">
+    <section class="hero">
+      <div class="breadcrumb">Nasdaq-100 · 科技七姐妹</div>
+      <h1>科技七姐妹</h1>
+      <p class="subtitle">苹果、微软、英伟达、亚马逊、谷歌、Meta、特斯拉——纳指100的市值核心与盈利引擎。展示近10年营收、净利润、PE-TTM，标注现价、年内涨幅、季度环比与年同比。</p>
+      <div class="hero-stats" id="heroStats"></div>
+    </section>
+
+    <!-- 市值占比 -->
+    <section class="section" id="weight-section">
+      <div class="section-header"><h2>市值占比</h2></div>
+      <div class="chart-card">
+        <h3>七姐妹市值占纳指100比重</h3>
+        <div class="chart-desc" id="weightDesc">七姐妹合计占纳指100总市值比例。</div>
+        <div class="chart-box sm" id="weightChart"></div>
+      </div>
+    </section>
+
+    <!-- 个股详情 -->
+    <section class="section" id="detail-section">
+      <div class="section-header"><h2>个股数据</h2></div>
+      <div class="table-wrap">
+        <table id="detailTable">
+          <thead>
+            <tr>
+              <th>公司</th>
+              <th class="num">市值</th>
+              <th class="num">最新季度营收</th>
+              <th class="num">营收同比</th>
+              <th class="num">最新季度净利</th>
+              <th class="num">净利同比</th>
+              <th class="num">PE-TTM(约)</th>
+            </tr>
+          </thead>
+          <tbody id="detailBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 七姐妹营收对比 -->
+    <section class="section" id="rev-section">
+      <div class="section-header"><h2>营收趋势（近10年）</h2></div>
+      <div class="chart-card">
+        <h3>七姐妹 年度营收（十亿美元）</h3>
+        <div class="chart-desc">SEC 官方财报口径，2016-2026。</div>
+        <div class="chart-box" id="revChart"></div>
+      </div>
+    </section>
+
+    <!-- 七姐妹净利对比 -->
+    <section class="section" id="ni-section">
+      <div class="section-header"><h2>净利润趋势（近10年）</h2></div>
+      <div class="chart-card">
+        <h3>七家公司 年度净利润（十亿美元）</h3>
+        <div class="chart-desc">SEC 官方财报口径，2016-2026。</div>
+        <div class="chart-box" id="niChart"></div>
+      </div>
+    </section>
+
+    <div class="note">
+      <strong>说明：</strong>市值来自 stockanalysis 最新快照；PE-TTM 用市值/最近四季度净利估算（非官方口径）。同比/环比基于各公司自身财季序列。
+    </div>
+  </div>
+</main>
+<script>
+  Dash.init('mag7');
+  var D = window.NDX_DATA;
+  var mag7 = D.mag7;
+  var MAG7 = ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'TSLA'];
+
+  // ===== Hero =====
+  document.getElementById('heroStats').innerHTML =
+    '<span class="badge badge-accent">七姐妹市值权重 ' + (mag7.weight ? mag7.weight.toFixed(1) + '%' : '—') + '</span>';
+
+  // ===== 市值占比饼图 =====
+  var weightChart = echarts.init(document.getElementById('weightChart'));
+  var pieData = MAG7.map(function (t) {
+    return { name: t, value: mag7.marketcap[t] ? mag7.marketcap[t].value : 0 };
+  });
+  weightChart.setOption({
+    tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+    legend: { orient: 'vertical', left: 'left' },
+    series: [{
+      name: '市值', type: 'pie', radius: ['45%', '70%'],
+      center: ['55%', '50%'],
+      data: pieData,
+      label: { formatter: '{b}\n{d}%' },
+      emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.2)' } }
+    }]
+  });
+
+  // ===== 详情表 =====
+  var rows = MAG7.map(function (t) {
+    var info = mag7.meta[t];
+    var series = mag7.series[t];
+    var mc = mag7.marketcap[t] || {};
+    var qRev = series.quarterly_revenue;
+    var qNi = series.quarterly_netincome;
+    var lastQ = qRev[qRev.length - 1];
+    var prevQ = qRev[qRev.length - 4]; // 同比用4季前
+    var revYoy = lastQ && prevQ && lastQ[1] != null && prevQ[1] != null ? (lastQ[1] / prevQ[1] - 1) * 100 : null;
+    var lastN = qNi[qNi.length - 1];
+    var prevN = qNi[qNi.length - 4];
+    var niYoy = lastN && prevN && lastN[1] != null && prevN[1] != null ? (lastN[1] / prevN[1] - 1) * 100 : null;
+    // PE估算
+    var mcVal = mc.value || 0;
+    var ttmNi = 0;
+    for (var i = 0; i < Math.min(4, qNi.length); i++) ttmNi += (qNi[i] && qNi[i][1]) || 0;
+    var pe = ttmNi > 0 ? mcVal / ttmNi : null;
+    return '<tr>' +
+      '<td><strong>' + Dash.esc(t) + '</strong><br><span class="text-muted">' + Dash.esc(info.name) + '</span></td>' +
+      '<td class="num">' + Dash.esc(mc.note || '—') + '</td>' +
+      '<td class="num">' + (lastQ ? Dash.fmtUSD(lastQ[1]) : '—') + '<br><span class="text-muted">' + (lastQ ? lastQ[0] : '') + '</span></td>' +
+      '<td class="num ' + (revYoy > 0 ? 'text-up' : revYoy < 0 ? 'text-down' : '') + '">' + Dash.fmtPct(revYoy) + '</td>' +
+      '<td class="num">' + (lastN ? Dash.fmtUSD(lastN[1]) : '—') + '<br><span class="text-muted">' + (lastN ? lastN[0] : '') + '</span></td>' +
+      '<td class="num ' + (niYoy > 0 ? 'text-up' : niYoy < 0 ? 'text-down' : '') + '">' + Dash.fmtPct(niYoy) + '</td>' +
+      '<td class="num">' + (pe ? pe.toFixed(1) : '—') + '</td>' +
+    '</tr>';
+  }).join('');
+  document.getElementById('detailBody').innerHTML = rows;
+
+  // ===== 营收对比图 =====
+  var revChart = echarts.init(document.getElementById('revChart'));
+  var years = [];
+  var yrSet = new Set();
+  MAG7.forEach(function (m) {
+    mag7.series[m].annual_revenue.forEach(function (p) { yrSet.add(p[0]); });
+  });
+  years = Array.from(yrSet).sort();
+  revChart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { top: 0 },
+    grid: { left: 60, right: 20, top: 40, bottom: 40 },
+    xAxis: { type: 'category', data: years },
+    yAxis: { type: 'value', name: '十亿美元' },
+    series: MAG7.map(function (m) {
+      var map = {};
+      mag7.series[m].annual_revenue.forEach(function (p) { map[p[0]] = p[1] / 1e9; });
+      return {
+        name: m, type: 'line', smooth: true, symbol: 'none',
+        data: years.map(function (y) { return map[y] == null ? null : map[y]; })
+      };
+    })
+  });
+
+  // ===== 净利对比图 =====
+  var niChart = echarts.init(document.getElementById('niChart'));
+  niChart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { top: 0 },
+    grid: { left: 60, right: 20, top: 40, bottom: 40 },
+    xAxis: { type: 'category', data: years },
+    yAxis: { type: 'value', name: '十亿美元' },
+    series: MAG7.map(function (m) {
+      var map = {};
+      mag7.series[m].annual_netincome.forEach(function (p) { map[p[0]] = p[1] / 1e9; });
+      return {
+        name: m, type: 'line', smooth: true, symbol: 'none',
+        data: years.map(function (y) { return map[y] == null ? null : map[y]; })
+      };
+    })
+  });
+</script>
+</body>
+</html>

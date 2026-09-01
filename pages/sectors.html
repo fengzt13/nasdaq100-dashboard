@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%233b82f6%22/><text x=%2250%22 y=%2268%22 font-size=%2240%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>NDX</text></svg>">
+  <title>行业细分 · 纳指100大数据追踪看板</title>
+  <meta name="description" content="纳指100剔除七姐妹后按行业细分，营收/净利/FCF 近10年趋势与最新季度环比同比。">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/echarts.min.js"></script>
+  <script src="../js/site.js"></script>
+</head>
+<body>
+<main>
+  <div class="container">
+    <section class="hero">
+      <div class="breadcrumb">Nasdaq-100 · 行业细分</div>
+      <h1>行业细分</h1>
+      <p class="subtitle">剔除科技七姐妹后，按行业板块聚合纳指100成分股，展示近10年营收、净利润、自由现金流趋势与最新季度表现。</p>
+      <div class="hero-stats" id="heroStats"></div>
+    </section>
+
+    <!-- 板块营收占比 -->
+    <section class="section" id="share-section">
+      <div class="section-header"><h2>板块构成</h2></div>
+      <div class="chart-card">
+        <h3>各板块最新季度营收占比</h3>
+        <div class="chart-desc" id="shareDesc">基于成分股季度财报加总。</div>
+        <div class="chart-box sm" id="shareChart"></div>
+      </div>
+    </section>
+
+    <!-- 板块明细表 -->
+    <section class="section" id="table-section">
+      <div class="section-header"><h2>板块明细 · 最新季度</h2></div>
+      <div class="table-wrap">
+        <table id="sectorTable">
+          <thead>
+            <tr>
+              <th>板块</th>
+              <th class="num">成分股数</th>
+              <th class="num">最新季度营收</th>
+              <th class="num">营收同比</th>
+              <th class="num">最新季度净利</th>
+              <th class="num">净利同比</th>
+              <th class="num">最新季度FCF</th>
+            </tr>
+          </thead>
+          <tbody id="sectorBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 板块营收趋势 -->
+    <section class="section" id="trend-section">
+      <div class="section-header"><h2>板块营收趋势（近5年）</h2></div>
+      <div class="chart-card">
+        <h3>各板块季度营收（十亿美元）</h3>
+        <div class="chart-desc">成分股季度财报加总。</div>
+        <div class="chart-box" id="trendChart"></div>
+      </div>
+    </section>
+
+    <div class="note">
+      <strong>说明：</strong>板块划分为自定义口径（基于纳指100实际成分），剔除七姐妹后聚合；最新季度为各成分股最近财报期加总，各公司财季不完全对齐。
+    </div>
+  </div>
+</main>
+<script>
+  Dash.init('sectors');
+  var D = window.NDX_DATA;
+  var sectors = D.sectors;
+
+  // ===== Hero =====
+  var totalRev = 0;
+  var totalCount = 0;
+  Object.keys(sectors).forEach(function (k) {
+    var qr = sectors[k].quarterly_revenue;
+    if (qr.length) totalRev += qr[qr.length - 1][1];
+    totalCount += sectors[k].count;
+  });
+  document.getElementById('heroStats').innerHTML =
+    '<span class="badge badge-accent">' + Object.keys(sectors).length + ' 大板块</span> ' +
+    '<span class="badge">剔除七姐妹后 ' + totalCount + ' 家</span>';
+
+  // ===== 板块营收占比饼图 =====
+  var shareChart = echarts.init(document.getElementById('shareChart'));
+  var shareData = Object.keys(sectors).map(function (k) {
+    var qr = sectors[k].quarterly_revenue;
+    var v = qr.length ? qr[qr.length - 1][1] : 0;
+    return { name: sectors[k].label, value: v / 1e9 };
+  });
+  shareChart.setOption({
+    tooltip: { trigger: 'item', formatter: '{b}: {c}十亿美元 ({d}%)' },
+    legend: { orient: 'vertical', left: 'left', type: 'scroll' },
+    series: [{
+      name: '营收占比', type: 'pie', radius: ['40%', '68%'],
+      center: ['55%', '50%'],
+      data: shareData,
+      label: { formatter: '{b}\n{d}%', fontSize: 10 },
+      emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.2)' } }
+    }]
+  });
+
+  // ===== 板块明细表 =====
+  var rows = Object.keys(sectors).map(function (k) {
+    var s = sectors[k];
+    var qr = s.quarterly_revenue;
+    var qn = s.quarterly_netincome;
+    var qf = s.quarterly_fcf;
+    var last = qr[qr.length - 1];
+    var prev = qr[qr.length - 5];
+    var revYoy = last && prev && last[1] != null && prev[1] != null ? (last[1] / prev[1] - 1) * 100 : null;
+    var lastN = qn[qn.length - 1];
+    var prevN = qn[qn.length - 5];
+    var niYoy = lastN && prevN && lastN[1] != null && prevN[1] != null ? (lastN[1] / prevN[1] - 1) * 100 : null;
+    var lastF = qf[qf.length - 1];
+    return '<tr>' +
+      '<td><strong>' + Dash.esc(s.label) + '</strong><br><span class="text-muted">' + Dash.esc(s.desc) + '</span></td>' +
+      '<td class="num">' + s.count + '</td>' +
+      '<td class="num">' + (last ? Dash.fmtUSD(last[1]) : '—') + '<br><span class="text-muted">' + (last ? last[0] : '') + '</span></td>' +
+      '<td class="num ' + (revYoy > 0 ? 'text-up' : revYoy < 0 ? 'text-down' : '') + '">' + Dash.fmtPct(revYoy) + '</td>' +
+      '<td class="num">' + (lastN ? Dash.fmtUSD(lastN[1]) : '—') + '</td>' +
+      '<td class="num ' + (niYoy > 0 ? 'text-up' : niYoy < 0 ? 'text-down' : '') + '">' + Dash.fmtPct(niYoy) + '</td>' +
+      '<td class="num">' + (lastF ? Dash.fmtUSD(lastF[1]) : '—') + '</td>' +
+    '</tr>';
+  }).join('');
+  document.getElementById('sectorBody').innerHTML = rows;
+
+  // ===== 板块营收趋势 =====
+  var trendChart = echarts.init(document.getElementById('trendChart'));
+  var trendSeries = Object.keys(sectors).map(function (k) {
+    var s = sectors[k];
+    return {
+      name: s.label, type: 'line', smooth: true, symbol: 'none',
+      data: s.quarterly_revenue.map(function (p) { return [p[0], p[1] / 1e9]; })
+    };
+  });
+  trendChart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { top: 0, type: 'scroll' },
+    grid: { left: 60, right: 20, top: 40, bottom: 60 },
+    xAxis: { type: 'time' },
+    yAxis: { type: 'value', name: '十亿美元' },
+    series: trendSeries
+  });
+</script>
+</body>
+</html>

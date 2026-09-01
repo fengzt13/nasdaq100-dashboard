@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%233b82f6%22/><text x=%2250%22 y=%2268%22 font-size=%2240%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>NDX</text></svg>">
+  <title>数据说明 · 纳指100大数据追踪看板</title>
+  <meta name="description" content="纳指100大数据追踪看板的数据来源、计算方法与口径说明。">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/site.js"></script>
+</head>
+<body>
+<main>
+  <div class="container">
+    <section class="hero">
+      <div class="breadcrumb">Nasdaq-100 · 数据说明</div>
+      <h1>数据说明与方法论</h1>
+      <p class="subtitle">本看板所有数据均来自公开渠道，采用成分股财报加总法，数据缺失处如实标注，不编造。</p>
+    </section>
+
+    <section class="section">
+      <div class="section-header"><h2>数据来源</h2></div>
+      <div class="note" style="margin-top:0;">
+        <ul style="padding-left:1.2rem; line-height:2;">
+          <li><strong>SEC EDGAR XBRL</strong>：纳指100成分股（102家）财报营收、净利润、经营现金流、资本开支、股东权益，年度数据覆盖近10年。</li>
+          <li><strong>stockanalysis.com</strong>：成分股季度财务数据（约5年）与当前市值、价格、涨跌幅。</li>
+          <li><strong>Siblis Research</strong>：纳指100指数级 PE-TTM/EPS 季度序列（免费版仅9个季度点）。</li>
+          <li><strong>新浪财经</strong>：纳指100指数日K线（2014-2026）。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header"><h2>计算方法</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>指标</th><th>计算方法</th><th>口径说明</th></tr></thead>
+          <tbody>
+            <tr><td>指数整体营收/净利</td><td>成分股财报加总</td><td>全部成分股同一财年/财季值求和；2026年为进行中年度，为部分年度值</td></tr>
+            <tr><td>自由现金流（FCF）</td><td>经营现金流 − 资本开支</td><td>SEC 财报口径，年度加总</td></tr>
+            <tr><td>ROE</td><td>整体净利 / 期末股东权益</td><td>年度口径，分母为当年年末股东权益加总</td></tr>
+            <tr><td>PE-TTM（加总法）</td><td>总市值 / 滚动四季度净利</td><td>市值加权口径，市值取 stockanalysis 快照</td></tr>
+            <tr><td>PE-TTM（Siblis）</td><td>指数官方 EPS 口径</td><td>Siblis Research 官方序列，免费版仅2023Q4起9个点</td></tr>
+            <tr><td>指数走势</td><td>月末收盘价</td><td>新浪财经日K线，月粒度</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header"><h2>成分与口径</h2></div>
+      <div class="note" style="margin-top:0;">
+        <strong>成分处理：</strong>基于 stockanalysis 纳指100成分列表（102条记录）。<br>
+        · Alphabet 含 GOOGL/GOOG 双股，聚合时仅计 GOOGL（市值较大），避免重复。<br>
+        · SPCX（SpaceX）为私有公司，未上市，剔除出财务聚合。<br>
+        · 实际参与财务加总的成分股为 101 家；剔除后 7 家 SEC 数据不足的 ADR/新股（ASML/ARM/PDD等），在对应年份如实标注缺失。<br>
+        <strong>财年差异：</strong>各成分股财年结束日不同（如 NVDA 为 1 月、苹果 9 月），年度聚合按自然年对齐财报期末日，季度数据按各公司财季序列汇总。
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header"><h2>免责声明</h2></div>
+      <div class="note" style="margin-top:0;">
+        本看板所有数据仅用于研究参考，不构成任何投资建议。数据可能因公司财报重述、成分调整等原因存在误差。投资有风险，决策需谨慎。
+      </div>
+    </section>
+  </div>
+</main>
+<script>
+  Dash.init('methodology');
+</script>
+</body>
+</html>

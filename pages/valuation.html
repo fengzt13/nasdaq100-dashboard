@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%233b82f6%22/><text x=%2250%22 y=%2268%22 font-size=%2240%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>NDX</text></svg>">
+  <title>估值(PE) · 纳指100大数据追踪看板</title>
+  <meta name="description" content="纳指100 PE-TTM 估值：成分股加总法 + Siblis 官方序列交叉验证。">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/echarts.min.js"></script>
+  <script src="../js/site.js"></script>
+</head>
+<body>
+<main>
+  <div class="container">
+    <section class="hero">
+      <div class="breadcrumb">Nasdaq-100 · 估值</div>
+      <h1>估值（PE-TTM）</h1>
+      <p class="subtitle">纳指100整体估值水平，采用成分股加总口径（总市值/滚动四季度净利），并与 Siblis Research 官方序列交叉验证。</p>
+      <div class="hero-stats" id="heroStats"></div>
+    </section>
+
+    <!-- 当前估值卡片 -->
+    <section class="section" id="pe-cards">
+      <div class="section-header"><h2>当前估值</h2></div>
+      <div class="card-grid" id="peCards"></div>
+    </section>
+
+    <!-- PE-TTM 历史（Siblis官方） -->
+    <section class="section" id="siblis-section">
+      <div class="section-header"><h2>PE-TTM 历史（Siblis 官方）</h2></div>
+      <div class="chart-card">
+        <h3>纳指100 PE-TTM（季度，2023Q4-2026Q2）</h3>
+        <div class="chart-desc">Siblis Research 官方序列，基于指数 EPS 口径。</div>
+        <div class="chart-box sm" id="siblisChart"></div>
+      </div>
+    </section>
+
+    <!-- 估值 vs 指数走势 -->
+    <section class="section" id="pe-index-section">
+      <div class="section-header"><h2>估值与指数走势</h2></div>
+      <div class="chart-card">
+        <h3>PE-TTM 与纳指100 点位（双轴）</h3>
+        <div class="chart-desc">观察估值扩张与指数上涨的关系。</div>
+        <div class="chart-box" id="peIndexChart"></div>
+      </div>
+    </section>
+
+    <div class="note">
+      <strong>口径说明：</strong>加总法 PE = 全部成分股总市值 / 滚动四季度净利润总和，反映市值加权估值；Siblis 官方 PE 基于指数官方 EPS（含权重）。两者差异正常，均非投资建议。
+    </div>
+  </div>
+</main>
+<script>
+  Dash.init('valuation');
+  var D = window.NDX_DATA;
+
+  // ===== Hero =====
+  var peInfo = D.pe;
+  var siblisLast = D.siblis_pe[D.siblis_pe.length - 1];
+  document.getElementById('heroStats').innerHTML =
+    '<span class="badge badge-accent">加总法 PE ' + (peInfo.pe ? peInfo.pe.toFixed(1) : '—') + '</span> ' +
+    '<span class="badge">Siblis官方 ' + (siblisLast ? siblisLast[1].toFixed(1) : '—') + '</span>';
+
+  // ===== 当前估值卡片 =====
+  var peCards = [
+    { label: 'PE-TTM（加总法）', value: peInfo.pe ? peInfo.pe.toFixed(1) : '—', sub: '总市值 ' + Dash.fmtUSD(peInfo.totalMcap) },
+    { label: 'TTM净利（加总）', value: Dash.fmtB(peInfo.ttmNi), sub: '滚动四季度净利总和' },
+    { label: 'PE-TTM（Siblis）', value: siblisLast ? siblisLast[1].toFixed(1) : '—', sub: '截至 ' + (siblisLast ? siblisLast[0].slice(0,7) : '') },
+    { label: '指数点位', value: D.index[D.index.length-1] ? D.index[D.index.length-1][1].toFixed(0) : '—', sub: '纳指100最新月末收盘' }
+  ];
+  document.getElementById('peCards').innerHTML = peCards.map(function (c) {
+    return '<div class="card card-hover">' +
+      '<div class="card-label">' + Dash.esc(c.label) + '</div>' +
+      '<div class="card-value">' + Dash.esc(c.value) + '</div>' +
+      '<div class="card-sub">' + Dash.esc(c.sub) + '</div>' +
+    '</div>';
+  }).join('');
+
+  // ===== Siblis PE 历史 =====
+  var siblisChart = echarts.init(document.getElementById('siblisChart'));
+  siblisChart.setOption({
+    tooltip: { trigger: 'axis' },
+    grid: { left: 50, right: 20, top: 30, bottom: 40 },
+    xAxis: { type: 'time' },
+    yAxis: { type: 'value', name: 'PE' },
+    series: [{
+      name: 'PE-TTM', type: 'line', data: D.siblis_pe,
+      smooth: true, symbol: 'circle', symbolSize: 6,
+      lineStyle: { color: '#3b82f6', width: 2 },
+      areaStyle: { color: 'rgba(59,130,246,0.12)' }
+    }]
+  });
+
+  // ===== PE 与指数双轴 =====
+  var peIndexChart = echarts.init(document.getElementById('peIndexChart'));
+  // 合并 Siblis PE 与指数点位（指数用月末值）
+  var idxMap = {};
+  D.index.forEach(function (p) { idxMap[p[0].slice(0, 7)] = p[1]; });
+  var peData = D.siblis_pe.map(function (p) { return [p[0], p[1]]; });
+  var idxAligned = D.siblis_pe.map(function (p) {
+    var m = p[0].slice(0, 7);
+    var v = idxMap[m];
+    return [p[0], v];
+  });
+  peIndexChart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['PE-TTM', '纳指100'], top: 0 },
+    grid: { left: 50, right: 60, top: 40, bottom: 40 },
+    xAxis: { type: 'time' },
+    yAxis: [
+      { type: 'value', name: 'PE', position: 'left' },
+      { type: 'value', name: '点位', position: 'right', scale: true }
+    ],
+    series: [
+      { name: 'PE-TTM', type: 'line', data: peData, smooth: true, symbol: 'circle', symbolSize: 6, lineStyle: { color: '#3b82f6', width: 2 } },
+      { name: '纳指100', type: 'line', yAxisIndex: 1, data: idxAligned, smooth: true, symbol: 'none', lineStyle: { color: '#d97706', width: 2, type: 'dashed' } }
+    ]
+  });
+</script>
+</body>
+</html>

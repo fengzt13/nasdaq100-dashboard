@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%233b82f6%22/><text x=%2250%22 y=%2268%22 font-size=%2240%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>NDX</text></svg>">
+  <title>纳指100大数据追踪看板 · 总览</title>
+  <meta name="description" content="纳指100大数据追踪看板：营收、利润、自由现金流、ROE、PE-TTM 全景，科技七姐妹与行业板块对比，数据来自 SEC 官方财报与成分股加总。">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/data.js"></script>
+  <script src="js/echarts.min.js"></script>
+  <script src="js/site.js"></script>
+</head>
+<body>
+<main>
+  <div class="container">
+    <section class="hero">
+      <div class="breadcrumb">Nasdaq-100 · 大数据总览</div>
+      <h1>纳指100大数据追踪看板</h1>
+      <p class="subtitle">以季度/年度为粒度，追踪纳指100指数整体的营收、净利润、自由现金流（FCF）、ROE、PE-TTM 真实状态，叠加指数走势，拆解科技七姐妹与行业板块。数据来自 SEC 官方财报与成分股加总。</p>
+      <div class="hero-stats" id="heroStats"></div>
+    </section>
+
+    <!-- 核心指标卡片 -->
+    <section class="section" id="key-metrics">
+      <div class="section-header"><h2>核心指标 · 最新报告期</h2></div>
+      <div class="card-grid" id="metricCards"></div>
+    </section>
+
+    <!-- 指数走势 -->
+    <section class="section" id="index-chart">
+      <div class="section-header"><h2>纳指100 指数走势（月线）</h2></div>
+      <div class="chart-card">
+        <h3>纳指100 月度收盘（2016-2026）</h3>
+        <div class="chart-desc" id="indexDesc">纳指100指数月度走势，反映指数整体价格表现。</div>
+        <div class="chart-box" id="indexChart"></div>
+      </div>
+    </section>
+
+    <!-- 营收趋势 -->
+    <section class="section" id="revenue-chart">
+      <div class="section-header"><h2>营收与利润趋势</h2></div>
+      <div class="chart-card">
+        <h3>纳指100 整体营收（年度，亿美元）</h3>
+        <div class="chart-desc">成分股财报加总，SEC 官方口径。</div>
+        <div class="chart-box sm" id="revChart"></div>
+      </div>
+      <div class="chart-card">
+        <h3>纳指100 整体净利润（年度，亿美元）</h3>
+        <div class="chart-desc">成分股财报加总，SEC 官方口径。</div>
+        <div class="chart-box sm" id="niChart"></div>
+      </div>
+    </section>
+
+    <!-- FCF / ROE -->
+    <section class="section" id="fcf-roe">
+      <div class="section-header"><h2>自由现金流与 ROE</h2></div>
+      <div class="chart-card">
+        <h3>纳指100 整体自由现金流（年度，亿美元）</h3>
+        <div class="chart-desc">经营现金流 − 资本开支（SEC 财报口径）。</div>
+        <div class="chart-box sm" id="fcfChart"></div>
+      </div>
+      <div class="chart-card">
+        <h3>纳指100 整体 ROE（年度，%）</h3>
+        <div class="chart-desc">整体净利 / 整体股东权益（成分股加总）。</div>
+        <div class="chart-box sm" id="roeChart"></div>
+      </div>
+    </section>
+
+    <!-- 七姐妹概览 -->
+    <section class="section" id="mag7-section">
+      <div class="section-header">
+        <h2>科技七姐妹</h2>
+        <a class="more" href="pages/mag7.html">查看详细分析 →</a>
+      </div>
+      <div class="card-grid" id="mag7Cards"></div>
+    </section>
+
+    <div class="note">
+      <strong>数据口径：</strong>七姐妹与板块数据为成分股财报加总；2026年为进行中年度，年度值为截至最新财报期的部分值。PE-TTM 采用成分股加总法（总市值/滚动四季度净利），与 Siblis 官方序列（35.24）口径不同，见<a href="pages/methodology.html">数据说明</a>。
+    </div>
+  </div>
+</main>
+<script>
+  Dash.init('index');
+  var D = window.NDX_DATA;
+  var meta = D.meta;
+  var annual = D.annual;
+
+  // ===== Hero 统计 =====
+  var lastYear = annual[annual.length - 1];
+  var lastYear2 = annual[annual.length - 2];
+  document.getElementById('heroStats').innerHTML =
+    '<span class="badge badge-accent">数据截至 ' + meta.asOf + '</span> ' +
+    '<span class="badge">' + annual.length + ' 年年度数据</span> ' +
+    '<span class="badge">' + (D.quarterly.length) + ' 季度数据点</span>';
+
+  // ===== 核心指标卡片 =====
+  var peInfo = D.pe;
+  var siblisLatest = D.siblis_pe[D.siblis_pe.length - 1];
+  var revLast = annual[annual.length - 1];
+  var revPrev = annual[annual.length - 2];
+  var niLast = annual[annual.length - 1];
+  var niPrev = annual[annual.length - 2];
+
+  var metricCards = [
+    { label: 'PE-TTM（加总法）', value: peInfo.pe ? peInfo.pe.toFixed(1) : '—', sub: '总市值 ' + Dash.fmtB(peInfo.totalMcap) + ' / TTM净利 ' + Dash.fmtB(peInfo.ttmNi) },
+    { label: 'PE-TTM（Siblis官方）', value: siblisLatest ? siblisLatest[1].toFixed(1) : '—', sub: siblisLatest ? '截至 ' + siblisLatest[0].slice(0,7) + ' · 交叉验证' : '' },
+    { label: '整体营收（' + revLast.year + '年）', value: revLast ? (revLast.revenue / 1e8).toFixed(0) + '亿' : '—', sub: revLast && revPrev ? ('同比 ' + Dash.fmtPct((revLast.revenue / revPrev.revenue - 1) * 100)) : '' },
+    { label: '整体净利（' + niLast.year + '年）', value: niLast ? (niLast.netincome / 1e8).toFixed(0) + '亿' : '—', sub: niLast && niPrev ? ('同比 ' + Dash.fmtPct((niLast.netincome / niPrev.netincome - 1) * 100)) : '' },
+    { label: '整体FCF（' + (annual[annual.length-1].year) + '年）', value: annual[annual.length-1].fcf ? (annual[annual.length-1].fcf / 1e8).toFixed(0) + '亿' : '—', sub: '经营现金流 − 资本开支' },
+    { label: '整体ROE（' + (annual[annual.length-1].year) + '年）', value: annual[annual.length-1].roe ? annual[annual.length-1].roe.toFixed(1) + '%' : '—', sub: '净利润 / 期末股东权益' },
+    { label: '七姐妹市值权重', value: D.mag7.weight ? D.mag7.weight.toFixed(1) + '%' : '—', sub: '占纳指100总市值' },
+    { label: '成分股数量', value: '101', sub: '剔除 SPCX(私有) 与 GOOG 双股' }
+  ];
+  document.getElementById('metricCards').innerHTML = metricCards.map(function (c) {
+    return '<div class="card card-hover">' +
+      '<div class="card-label">' + Dash.esc(c.label) + '</div>' +
+      '<div class="card-value">' + Dash.esc(c.value) + '</div>' +
+      '<div class="card-sub">' + Dash.esc(c.sub) + '</div>' +
+    '</div>';
+  }).join('');
+
+  // ===== 指数走势 =====
+  var indexChart = echarts.init(document.getElementById('indexChart'));
+  var idxData = D.index;
+  indexChart.setOption({
+    tooltip: { trigger: 'axis' },
+    grid: { left: 60, right: 20, top: 30, bottom: 40 },
+    xAxis: { type: 'time' },
+    yAxis: { type: 'value', name: '点位', scale: true },
+    series: [{
+      name: '纳指100', type: 'line', data: idxData,
+      smooth: true, symbol: 'none',
+      lineStyle: { color: '#3b82f6', width: 2 },
+      areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(59,130,246,0.25)' }, { offset: 1, color: 'rgba(59,130,246,0.02)' }] } }
+    }]
+  });
+
+  // ===== 营收柱状图（含同比） =====
+  var revChart = echarts.init(document.getElementById('revChart'));
+  var revData = annual;
+  var revX = revData.map(function (p) { return p.year; });
+  var revVals = revData.map(function (p) { return Math.round(p.revenue / 1e8); }); // 亿美元
+  var revYoy = revData.map(function (p, i) {
+    if (i === 0) return null;
+    return Math.round((p.revenue / revData[i-1].revenue - 1) * 1000) / 10;
+  });
+  revChart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+    legend: { data: ['营收(亿美元)', '同比(%)'], top: 0 },
+    grid: { left: 60, right: 60, top: 40, bottom: 40 },
+    xAxis: { type: 'category', data: revX },
+    yAxis: [
+      { type: 'value', name: '亿美元', position: 'left' },
+      { type: 'value', name: '同比%', position: 'right', axisLabel: { formatter: '{value}%' } }
+    ],
+    series: [
+      { name: '营收(亿美元)', type: 'bar', data: revVals, itemStyle: { color: '#3b82f6' }, barWidth: '55%' },
+      { name: '同比(%)', type: 'line', yAxisIndex: 1, data: revYoy, smooth: true, symbol: 'circle', symbolSize: 4,
+        lineStyle: { color: '#d97706', width: 2 }, itemStyle: { color: '#d97706' }, connectNulls: true }
+    ]
+  });
+
+  // ===== 净利润柱状图 =====
+  var niChart = echarts.init(document.getElementById('niChart'));
+  var niVals = revData.map(function (p) { return Math.round(p.netincome / 1e8); });
+  var niYoy = revData.map(function (p, i) {
+    if (i === 0) return null;
+    return Math.round((p.netincome / revData[i-1].netincome - 1) * 1000) / 10;
+  });
+  niChart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+    legend: { data: ['净利润(亿美元)', '同比(%)'], top: 0 },
+    grid: { left: 60, right: 60, top: 40, bottom: 40 },
+    xAxis: { type: 'category', data: revX },
+    yAxis: [
+      { type: 'value', name: '亿美元', position: 'left' },
+      { type: 'value', name: '同比%', position: 'right', axisLabel: { formatter: '{value}%' } }
+    ],
+    series: [
+      { name: '净利润(亿美元)', type: 'bar', data: niVals, itemStyle: { color: '#0e9f6e' }, barWidth: '55%' },
+      { name: '同比(%)', type: 'line', yAxisIndex: 1, data: niYoy, smooth: true, symbol: 'circle', symbolSize: 4,
+        lineStyle: { color: '#d97706', width: 2 }, itemStyle: { color: '#d97706' }, connectNulls: true }
+    ]
+  });
+
+  // ===== FCF 图 =====
+  var fcfChart = echarts.init(document.getElementById('fcfChart'));
+  var fcfVals = revData.map(function (p) { return p.fcf == null ? null : Math.round(p.fcf / 1e8); });
+  fcfChart.setOption({
+    tooltip: { trigger: 'axis' },
+    grid: { left: 60, right: 20, top: 30, bottom: 40 },
+    xAxis: { type: 'category', data: revX },
+    yAxis: { type: 'value', name: '亿美元' },
+    series: [{
+      name: '自由现金流', type: 'bar', data: fcfVals,
+      itemStyle: { color: '#0e9f6e' }, barWidth: '55%'
+    }]
+  });
+
+  // ===== ROE 图 =====
+  var roeChart = echarts.init(document.getElementById('roeChart'));
+  var roeVals = revData.map(function (p) { return p.roe == null ? null : Math.round(p.roe * 10) / 10; });
+  roeChart.setOption({
+    tooltip: { trigger: 'axis' },
+    grid: { left: 60, right: 20, top: 30, bottom: 40 },
+    xAxis: { type: 'category', data: revX },
+    yAxis: { type: 'value', name: '%', axisLabel: { formatter: '{value}%' } },
+    series: [{
+      name: 'ROE', type: 'line', data: roeVals,
+      smooth: true, symbol: 'circle', symbolSize: 5,
+      lineStyle: { color: '#3b82f6', width: 2 },
+      areaStyle: { color: 'rgba(59,130,246,0.1)' }
+    }]
+  });
+
+  // ===== 七姐妹卡片 =====
+  var mag7Cards = ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'TSLA'].map(function (t) {
+    var info = D.mag7.meta[t];
+    var series = D.mag7.series[t];
+    var lastQ = series.quarterly_revenue[series.quarterly_revenue.length - 1];
+    var lastN = series.quarterly_netincome[series.quarterly_netincome.length - 1];
+    var mc = D.mag7.marketcap[t] || {};
+    return '<div class="card card-hover">' +
+      '<div class="card-label">' + Dash.esc(info.name) + '</div>' +
+      '<div class="card-value">' + Dash.fmtB(lastQ[1]) + '</div>' +
+      '<div class="card-sub">最新季度营收 · ' + Dash.esc(lastQ[0]) + '</div>' +
+      '<div class="card-sub">净利 ' + Dash.fmtB(lastN[1]) + '</div>' +
+      (mc.value ? '<div class="card-delta">市值 ' + Dash.esc(mc.note) + '</div>' : '') +
+    '</div>';
+  }).join('');
+  document.getElementById('mag7Cards').innerHTML = mag7Cards;
+</script>
+</body>
+</html>
