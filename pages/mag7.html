@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%233b82f6%22/><text x=%2250%22 y=%2268%22 font-size=%2240%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>NDX</text></svg>">
   <title>科技七姐妹 · 纳指100大数据追踪看板</title>
-  <meta name="description" content="纳指100七姐妹（AAPL/MSFT/NVDA/AMZN/GOOGL/META/TSLA）市值占比、营收/净利/PE-TTM 十年趋势。">
+  <meta name="description" content="纳指100七姐妹（AAPL/MSFT/NVDA/AMZN/GOOGL/META/TSLA）市值占比、YTD营收/净利、年度数据表格。">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/data.js"></script>
   <script src="../js/echarts.min.js"></script>
@@ -17,34 +17,47 @@
     <section class="hero">
       <div class="breadcrumb">Nasdaq-100 · 科技七姐妹</div>
       <h1>科技七姐妹</h1>
-      <p class="subtitle">苹果、微软、英伟达、亚马逊、谷歌、Meta、特斯拉——纳指100的市值核心与盈利引擎。展示近10年营收、净利润、PE-TTM，标注现价、年内涨幅、季度环比与年同比。</p>
+      <p class="subtitle">苹果、微软、英伟达、亚马逊、谷歌、Meta、特斯拉——纳指100的市值核心与盈利引擎。展示2026年YTD累计营收/净利与同比、2016-2025年度数据表格。</p>
       <div class="hero-stats" id="heroStats"></div>
     </section>
 
     <!-- 市值占比 -->
     <section class="section" id="weight-section">
       <div class="section-header"><h2>市值占比</h2></div>
-      <div class="chart-card">
-        <h3>七姐妹市值占纳指100比重</h3>
-        <div class="chart-desc" id="weightDesc">七姐妹合计占纳指100总市值比例。</div>
-        <div class="chart-box sm" id="weightChart"></div>
+      <div class="table-wrap">
+        <table id="weightTable">
+          <thead>
+            <tr>
+              <th>公司</th>
+              <th class="num">市值</th>
+              <th class="num">占纳指100</th>
+              <th class="num">占七姐妹</th>
+            </tr>
+          </thead>
+          <tbody id="weightBody"></tbody>
+          <tfoot id="weightFoot"></tfoot>
+        </table>
+      </div>
+      <div class="note" style="margin-top:8px;">
+        七姐妹合计占纳指100总市值 <strong id="mag7Weight"></strong>，其余94家占 <strong id="restWeight"></strong>。市值为 stockanalysis 最新快照，截至 <span id="mcapAsOf"></span>。
       </div>
     </section>
 
-    <!-- 个股详情 -->
+    <!-- 个股 YTD 数据 -->
     <section class="section" id="detail-section">
-      <div class="section-header"><h2>个股数据</h2></div>
+      <div class="section-header"><h2>个股数据 · 2026年YTD累计</h2></div>
       <div class="table-wrap">
         <table id="detailTable">
           <thead>
             <tr>
               <th>公司</th>
               <th class="num">市值</th>
-              <th class="num">最新季度营收</th>
+              <th class="num">YTD营收(亿)</th>
               <th class="num">营收同比</th>
-              <th class="num">最新季度净利</th>
+              <th class="num">YTD净利(亿)</th>
               <th class="num">净利同比</th>
               <th class="num">PE-TTM(约)</th>
+              <th class="num">季度数</th>
             </tr>
           </thead>
           <tbody id="detailBody"></tbody>
@@ -52,28 +65,34 @@
       </div>
     </section>
 
-    <!-- 七姐妹营收对比 -->
+    <!-- 年度营收表格 -->
     <section class="section" id="rev-section">
-      <div class="section-header"><h2>营收趋势（近10年）</h2></div>
-      <div class="chart-card">
-        <h3>七姐妹 年度营收（十亿美元）</h3>
-        <div class="chart-desc">SEC 官方财报口径，2016-2026。</div>
-        <div class="chart-box" id="revChart"></div>
+      <div class="section-header"><h2>年度营收（亿美元）</h2></div>
+      <div class="table-wrap">
+        <div style="overflow-x:auto;">
+        <table id="revTable" class="wide-table">
+          <thead id="revHead"></thead>
+          <tbody id="revBody"></tbody>
+        </table>
+        </div>
       </div>
     </section>
 
-    <!-- 七姐妹净利对比 -->
+    <!-- 年度净利表格 -->
     <section class="section" id="ni-section">
-      <div class="section-header"><h2>净利润趋势（近10年）</h2></div>
-      <div class="chart-card">
-        <h3>七家公司 年度净利润（十亿美元）</h3>
-        <div class="chart-desc">SEC 官方财报口径，2016-2026。</div>
-        <div class="chart-box" id="niChart"></div>
+      <div class="section-header"><h2>年度净利润（亿美元）</h2></div>
+      <div class="table-wrap">
+        <div style="overflow-x:auto;">
+        <table id="niTable" class="wide-table">
+          <thead id="niHead"></thead>
+          <tbody id="niBody"></tbody>
+        </table>
+        </div>
       </div>
     </section>
 
     <div class="note">
-      <strong>说明：</strong>市值来自 stockanalysis 最新快照；PE-TTM 用市值/最近四季度净利估算（非官方口径）。同比/环比基于各公司自身财季序列。
+      <strong>说明：</strong>市值来自 stockanalysis 最新快照；PE-TTM 用市值/最近四季度净利估算。YTD 为各公司 2026 年已报告季度累计，同比为同期可比口径（同季度数对比）。年度数据来自 SEC 官方财报，2026YTD 列标记季度范围，2025同期为可比口径。
     </div>
   </div>
 </main>
@@ -85,96 +104,155 @@
 
   // ===== Hero =====
   document.getElementById('heroStats').innerHTML =
-    '<span class="badge badge-accent">七姐妹市值权重 ' + (mag7.weight ? mag7.weight.toFixed(1) + '%' : '—') + '</span>';
+    '<span class="badge badge-accent">七姐妹市值权重 ' + (mag7.weight ? mag7.weight.toFixed(1) + '%' : '—') + '</span> ' +
+    '<span class="badge">2026 YTD · ' + D.ytd.label + '</span>';
 
-  // ===== 市值占比饼图 =====
-  var weightChart = echarts.init(document.getElementById('weightChart'));
-  var pieData = MAG7.map(function (t) {
-    return { name: t, value: mag7.marketcap[t] ? mag7.marketcap[t].value : 0 };
-  });
-  weightChart.setOption({
-    tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-    legend: { orient: 'vertical', left: 'left' },
-    series: [{
-      name: '市值', type: 'pie', radius: ['45%', '70%'],
-      center: ['55%', '50%'],
-      data: pieData,
-      label: { formatter: '{b}\n{d}%' },
-      emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.2)' } }
-    }]
-  });
-
-  // ===== 详情表 =====
-  var rows = MAG7.map(function (t) {
-    var info = mag7.meta[t];
-    var series = mag7.series[t];
+  // ===== 市值占比表格 =====
+  var totalMcap = mag7.totalMcap || 0;
+  var mag7Mcap = mag7.mag7Mcap || 0;
+  var weightRows = MAG7.map(function (t) {
     var mc = mag7.marketcap[t] || {};
-    var qRev = series.quarterly_revenue;
-    var qNi = series.quarterly_netincome;
-    var lastQ = qRev[qRev.length - 1];
-    var prevQ = qRev[qRev.length - 4]; // 同比用4季前
-    var revYoy = lastQ && prevQ && lastQ[1] != null && prevQ[1] != null ? (lastQ[1] / prevQ[1] - 1) * 100 : null;
-    var lastN = qNi[qNi.length - 1];
-    var prevN = qNi[qNi.length - 4];
-    var niYoy = lastN && prevN && lastN[1] != null && prevN[1] != null ? (lastN[1] / prevN[1] - 1) * 100 : null;
+    var pct = totalMcap > 0 ? (mc.value / totalMcap * 100) : 0;
+    var pctMag7 = mag7Mcap > 0 ? (mc.value / mag7Mcap * 100) : 0;
+    return '<tr>' +
+      '<td><strong>' + Dash.esc(t) + '</strong> · ' + Dash.esc(mag7.meta[t].name) + '</td>' +
+      '<td class="num">' + Dash.esc(mc.note || '—') + '</td>' +
+      '<td class="num">' + pct.toFixed(1) + '%</td>' +
+      '<td class="num">' + pctMag7.toFixed(1) + '%</td>' +
+    '</tr>';
+  }).join('');
+  document.getElementById('weightBody').innerHTML = weightRows;
+  document.getElementById('weightFoot').innerHTML =
+    '<tr style="font-weight:bold;background:#f0f7ff;">' +
+    '<td>七姐妹合计</td>' +
+    '<td class="num">' + (mag7Mcap / 1e12).toFixed(2) + 'T</td>' +
+    '<td class="num">' + (mag7.weight || 0).toFixed(1) + '%</td>' +
+    '<td class="num">100%</td>' +
+    '</tr><tr style="color:var(--muted);">' +
+    '<td>其余成分股</td>' +
+    '<td class="num">' + ((totalMcap - mag7Mcap) / 1e12).toFixed(2) + 'T</td>' +
+    '<td class="num">' + (100 - (mag7.weight || 0)).toFixed(1) + '%</td>' +
+    '<td class="num">—</td>' +
+    '</tr>';
+  document.getElementById('mag7Weight').textContent = (mag7.weight || 0).toFixed(1) + '%';
+  document.getElementById('restWeight').textContent = (100 - (mag7.weight || 0)).toFixed(1) + '%';
+  document.getElementById('mcapAsOf').textContent = D.meta.asOf;
+
+  // ===== 个股 YTD 表格 =====
+  var detailRows = MAG7.map(function (t) {
+    var info = mag7.meta[t];
+    var ytd = mag7.ytdData[t];
+    var mc = mag7.marketcap[t] || {};
     // PE估算
     var mcVal = mc.value || 0;
+    var qNi = mag7.series[t].quarterly_netincome;
     var ttmNi = 0;
     for (var i = 0; i < Math.min(4, qNi.length); i++) ttmNi += (qNi[i] && qNi[i][1]) || 0;
     var pe = ttmNi > 0 ? mcVal / ttmNi : null;
     return '<tr>' +
       '<td><strong>' + Dash.esc(t) + '</strong><br><span class="text-muted">' + Dash.esc(info.name) + '</span></td>' +
       '<td class="num">' + Dash.esc(mc.note || '—') + '</td>' +
-      '<td class="num">' + (lastQ ? Dash.fmtUSD(lastQ[1]) : '—') + '<br><span class="text-muted">' + (lastQ ? lastQ[0] : '') + '</span></td>' +
-      '<td class="num ' + (revYoy > 0 ? 'text-up' : revYoy < 0 ? 'text-down' : '') + '">' + Dash.fmtPct(revYoy) + '</td>' +
-      '<td class="num">' + (lastN ? Dash.fmtUSD(lastN[1]) : '—') + '<br><span class="text-muted">' + (lastN ? lastN[0] : '') + '</span></td>' +
-      '<td class="num ' + (niYoy > 0 ? 'text-up' : niYoy < 0 ? 'text-down' : '') + '">' + Dash.fmtPct(niYoy) + '</td>' +
+      '<td class="num">' + (ytd.rev / 1e8).toFixed(0) + '</td>' +
+      '<td class="num ' + (ytd.revYoy > 0 ? 'text-up' : ytd.revYoy < 0 ? 'text-down' : '') + '">' + Dash.fmtPct(ytd.revYoy) + '</td>' +
+      '<td class="num">' + (ytd.ni / 1e8).toFixed(0) + '</td>' +
+      '<td class="num ' + (ytd.niYoy > 0 ? 'text-up' : ytd.niYoy < 0 ? 'text-down' : '') + '">' + Dash.fmtPct(ytd.niYoy) + '</td>' +
       '<td class="num">' + (pe ? pe.toFixed(1) : '—') + '</td>' +
+      '<td class="num">' + ytd.qCount + 'Q (' + Dash.esc(ytd.label) + ')</td>' +
     '</tr>';
   }).join('');
-  document.getElementById('detailBody').innerHTML = rows;
+  document.getElementById('detailBody').innerHTML = detailRows;
 
-  // ===== 营收对比图 =====
-  var revChart = echarts.init(document.getElementById('revChart'));
+  // ===== 年度营收表格 =====
+  // 列: 公司 | 2016 | 2017 | ... | 2025 | 2026YTD | 2025同期 | YoY
   var years = [];
-  var yrSet = new Set();
-  MAG7.forEach(function (m) {
-    mag7.series[m].annual_revenue.forEach(function (p) { yrSet.add(p[0]); });
-  });
-  years = Array.from(yrSet).sort();
-  revChart.setOption({
-    tooltip: { trigger: 'axis' },
-    legend: { top: 0 },
-    grid: { left: 60, right: 20, top: 40, bottom: 40 },
-    xAxis: { type: 'category', data: years },
-    yAxis: { type: 'value', name: '十亿美元' },
-    series: MAG7.map(function (m) {
-      var map = {};
-      mag7.series[m].annual_revenue.forEach(function (p) { map[p[0]] = p[1] / 1e9; });
-      return {
-        name: m, type: 'line', smooth: true, symbol: 'none',
-        data: years.map(function (y) { return map[y] == null ? null : map[y]; })
-      };
-    })
-  });
+  for (var y = 2016; y <= 2025; y++) years.push(String(y));
+  var revHeadHtml = '<tr><th>公司</th>';
+  years.forEach(function(y) { revHeadHtml += '<th class="num">' + y + '</th>'; });
+  revHeadHtml += '<th class="num">2026YTD</th><th class="num">2025同期</th><th class="num">YoY</th></tr>';
+  document.getElementById('revHead').innerHTML = revHeadHtml;
 
-  // ===== 净利对比图 =====
-  var niChart = echarts.init(document.getElementById('niChart'));
-  niChart.setOption({
-    tooltip: { trigger: 'axis' },
-    legend: { top: 0 },
-    grid: { left: 60, right: 20, top: 40, bottom: 40 },
-    xAxis: { type: 'category', data: years },
-    yAxis: { type: 'value', name: '十亿美元' },
-    series: MAG7.map(function (m) {
-      var map = {};
-      mag7.series[m].annual_netincome.forEach(function (p) { map[p[0]] = p[1] / 1e9; });
-      return {
-        name: m, type: 'line', smooth: true, symbol: 'none',
-        data: years.map(function (y) { return map[y] == null ? null : map[y]; })
-      };
-    })
+  var revBodyHtml = MAG7.map(function (t) {
+    var table = mag7.annualTable[t];
+    var row = '<tr><td><strong>' + Dash.esc(t) + '</strong></td>';
+    years.forEach(function (y) {
+      var v = table[y] && table[y].rev != null ? (table[y].rev / 1e8).toFixed(0) : '—';
+      row += '<td class="num">' + v + '</td>';
+    });
+    // 2026 YTD
+    var ytdRev = table['2026YTD'] ? (table['2026YTD'].rev / 1e8).toFixed(0) : '—';
+    var prevRev = table['2025PY'] ? (table['2025PY'].rev / 1e8).toFixed(0) : '—';
+    var yoy = table['2026YTD'] && table['2025PY'] && table['2025PY'].rev > 0
+      ? Dash.fmtPct((table['2026YTD'].rev / table['2025PY'].rev - 1) * 100) : '—';
+    var yoyClass = table['2026YTD'] && table['2025PY'] && table['2026YTD'].rev > table['2025PY'].rev ? 'text-up' : 'text-down';
+    row += '<td class="num" style="background:#f0f7ff;font-weight:bold;">' + ytdRev + '<br><span class="text-muted">' + (table['2026YTD'] ? table['2026YTD'].label : '') + '</span></td>';
+    row += '<td class="num">' + prevRev + '</td>';
+    row += '<td class="num ' + yoyClass + '">' + yoy + '</td>';
+    row += '</tr>';
+    return row;
+  }).join('');
+  // 合计行
+  var sumRow = '<tr style="font-weight:bold;background:#f0f7ff;"><td>七姐妹合计</td>';
+  years.forEach(function (y) {
+    var sum = 0, cnt = 0;
+    MAG7.forEach(function (t) {
+      if (mag7.annualTable[t][y] && mag7.annualTable[t][y].rev != null) { sum += mag7.annualTable[t][y].rev; cnt++; }
+    });
+    sumRow += '<td class="num">' + (cnt > 0 ? (sum / 1e8).toFixed(0) : '—') + '</td>';
   });
+  var sumYtd = 0, sumPrev = 0;
+  MAG7.forEach(function (t) {
+    if (mag7.annualTable[t]['2026YTD']) sumYtd += mag7.annualTable[t]['2026YTD'].rev;
+    if (mag7.annualTable[t]['2025PY']) sumPrev += mag7.annualTable[t]['2025PY'].rev;
+  });
+  sumRow += '<td class="num" style="font-weight:bold;">' + (sumYtd / 1e8).toFixed(0) + '</td>';
+  sumRow += '<td class="num">' + (sumPrev / 1e8).toFixed(0) + '</td>';
+  sumRow += '<td class="num ' + (sumYtd > sumPrev ? 'text-up' : 'text-down') + '">' + (sumPrev > 0 ? Dash.fmtPct((sumYtd/sumPrev-1)*100) : '—') + '</td>';
+  sumRow += '</tr>';
+  document.getElementById('revBody').innerHTML = revBodyHtml + sumRow;
+
+  // ===== 年度净利表格 =====
+  var niHeadHtml = '<tr><th>公司</th>';
+  years.forEach(function(y) { niHeadHtml += '<th class="num">' + y + '</th>'; });
+  niHeadHtml += '<th class="num">2026YTD</th><th class="num">2025同期</th><th class="num">YoY</th></tr>';
+  document.getElementById('niHead').innerHTML = niHeadHtml;
+
+  var niBodyHtml = MAG7.map(function (t) {
+    var table = mag7.annualTable[t];
+    var row = '<tr><td><strong>' + Dash.esc(t) + '</strong></td>';
+    years.forEach(function (y) {
+      var v = table[y] && table[y].ni != null ? (table[y].ni / 1e8).toFixed(0) : '—';
+      row += '<td class="num">' + v + '</td>';
+    });
+    var ytdNi = table['2026YTD'] ? (table['2026YTD'].ni / 1e8).toFixed(0) : '—';
+    var prevNi = table['2025PY'] ? (table['2025PY'].ni / 1e8).toFixed(0) : '—';
+    var yoy = table['2026YTD'] && table['2025PY'] && table['2025PY'].ni > 0
+      ? Dash.fmtPct((table['2026YTD'].ni / table['2025PY'].ni - 1) * 100) : '—';
+    var yoyClass = table['2026YTD'] && table['2025PY'] && table['2026YTD'].ni > table['2025PY'].ni ? 'text-up' : 'text-down';
+    row += '<td class="num" style="background:#f0f7ff;font-weight:bold;">' + ytdNi + '<br><span class="text-muted">' + (table['2026YTD'] ? table['2026YTD'].label : '') + '</span></td>';
+    row += '<td class="num">' + prevNi + '</td>';
+    row += '<td class="num ' + yoyClass + '">' + yoy + '</td>';
+    row += '</tr>';
+    return row;
+  }).join('');
+  // 合计行
+  var sumNiRow = '<tr style="font-weight:bold;background:#f0f7ff;"><td>七姐妹合计</td>';
+  years.forEach(function (y) {
+    var sum = 0, cnt = 0;
+    MAG7.forEach(function (t) {
+      if (mag7.annualTable[t][y] && mag7.annualTable[t][y].ni != null) { sum += mag7.annualTable[t][y].ni; cnt++; }
+    });
+    sumNiRow += '<td class="num">' + (cnt > 0 ? (sum / 1e8).toFixed(0) : '—') + '</td>';
+  });
+  var sumYtdNi = 0, sumPrevNi = 0;
+  MAG7.forEach(function (t) {
+    if (mag7.annualTable[t]['2026YTD']) sumYtdNi += mag7.annualTable[t]['2026YTD'].ni;
+    if (mag7.annualTable[t]['2025PY']) sumPrevNi += mag7.annualTable[t]['2025PY'].ni;
+  });
+  sumNiRow += '<td class="num" style="font-weight:bold;">' + (sumYtdNi / 1e8).toFixed(0) + '</td>';
+  sumNiRow += '<td class="num">' + (sumPrevNi / 1e8).toFixed(0) + '</td>';
+  sumNiRow += '<td class="num ' + (sumYtdNi > sumPrevNi ? 'text-up' : 'text-down') + '">' + (sumPrevNi > 0 ? Dash.fmtPct((sumYtdNi/sumPrevNi-1)*100) : '—') + '</td>';
+  sumNiRow += '</tr>';
+  document.getElementById('niBody').innerHTML = niBodyHtml + sumNiRow;
 </script>
 </body>
 </html>

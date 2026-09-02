@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%233b82f6%22/><text x=%2250%22 y=%2268%22 font-size=%2240%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>NDX</text></svg>">
   <title>估值(PE) · 纳指100大数据追踪看板</title>
-  <meta name="description" content="纳指100 PE-TTM 估值：成分股加总法 + Siblis 官方序列交叉验证。">
+  <meta name="description" content="纳指100 PE-TTM 估值：成分股加总法 + Siblis 官方序列 + 近10年估值分位数。">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/data.js"></script>
   <script src="../js/echarts.min.js"></script>
@@ -17,7 +17,7 @@
     <section class="hero">
       <div class="breadcrumb">Nasdaq-100 · 估值</div>
       <h1>估值（PE-TTM）</h1>
-      <p class="subtitle">纳指100整体估值水平，采用成分股加总口径（总市值/滚动四季度净利），并与 Siblis Research 官方序列交叉验证。</p>
+      <p class="subtitle">纳指100整体估值水平，采用成分股加总口径（总市值/滚动四季度净利），与 Siblis Research 官方序列交叉验证，并标注近10年估值分位数。</p>
       <div class="hero-stats" id="heroStats"></div>
     </section>
 
@@ -25,6 +25,17 @@
     <section class="section" id="pe-cards">
       <div class="section-header"><h2>当前估值</h2></div>
       <div class="card-grid" id="peCards"></div>
+    </section>
+
+    <!-- 估值分位数 -->
+    <section class="section" id="percentile-section">
+      <div class="section-header"><h2>近10年估值分位数</h2></div>
+      <div class="card-grid" id="percentileCards"></div>
+      <div class="chart-card" style="margin-top:16px;">
+        <h3>纳指100 PE-TTM 近10年走势与分位区间</h3>
+        <div class="chart-desc">Siblis 官方序列（2023Q4起）+ 历史估算值（2016-2023），用于分位数计算。虚线为中位数。</div>
+        <div class="chart-box sm" id="percentileChart"></div>
+      </div>
     </section>
 
     <!-- PE-TTM 历史（Siblis官方） -->
@@ -49,9 +60,10 @@
 
     <div class="note">
       <strong>口径说明：</strong><br>
-      · PE-TTM（加总法）= 全部成分股总市值快照 ÷ 滚动四季度净利润加总。市值截至最新交易日，利润覆盖近4个季度（各公司财季错位近似对齐）。<br>
-      · PE-季度年化 = 总市值快照 ÷ 最新单季度净利 × 4。市值与利润时点更接近，但单季度波动大（如季节性强的公司）。<br>
-      · PE-TTM（Siblis）基于指数官方 EPS（含权重），与加总法口径不同。三者均非投资建议。
+      · PE-TTM（加总法）= 全部成分股总市值快照 ÷ 滚动四季度净利润加总。市值截至最新交易日，利润覆盖近4个季度。<br>
+      · PE-季度年化 = 总市值快照 ÷ 最新单季度净利 × 4。市值与利润时点更接近，但单季度波动大。<br>
+      · PE-TTM（Siblis）基于指数官方 EPS（含权重），与加总法口径不同。<br>
+      · <strong>分位数</strong>：当前 PE 在近10年历史序列中的百分位。高于 80% 为历史高位，低于 20% 为历史低位。2016-2023 历史数据为估算值（参考 Multpl.com / Siblis 公开引用），仅供分位参考。
     </div>
   </div>
 </main>
@@ -62,10 +74,12 @@
   // ===== Hero =====
   var peInfo = D.pe;
   var siblisLast = D.siblis_pe[D.siblis_pe.length - 1];
+  var pctile = D.pe_percentile;
   document.getElementById('heroStats').innerHTML =
     '<span class="badge badge-accent">PE-TTM ' + (peInfo.peTtm ? peInfo.peTtm.toFixed(1) : '—') + '</span> ' +
     '<span class="badge">PE-季度年化 ' + (peInfo.peAnnualized ? peInfo.peAnnualized.toFixed(1) : '—') + '</span> ' +
-    '<span class="badge">Siblis官方 ' + (siblisLast ? siblisLast[1].toFixed(1) : '—') + '</span>';
+    '<span class="badge">Siblis官方 ' + (siblisLast ? siblisLast[1].toFixed(1) : '—') + '</span> ' +
+    '<span class="badge badge-accent">分位数 ' + pctile.percentile + '%</span>';
 
   // ===== 当前估值卡片 =====
   var peCards = [
@@ -86,6 +100,53 @@
     '</div>';
   }).join('');
 
+  // ===== 分位数卡片 =====
+  var pctileColor = pctile.percentile >= 80 ? 'var(--down)' : pctile.percentile <= 20 ? 'var(--up)' : '#d97706';
+  var pctileLevel = pctile.percentile >= 80 ? '历史高位' : pctile.percentile <= 20 ? '历史低位' : '中等水平';
+  var pctileCards = [
+    { label: '当前 PE-TTM', value: pctile.currentPE.toFixed(1),
+      sub: 'Siblis 官方 · 截至' + siblisLast[0].slice(0,7) },
+    { label: '近10年分位数', value: pctile.percentile + '%',
+      sub: pctileLevel + ' · 基于' + pctile.count + '个数据点' },
+    { label: '近10年中位数', value: pctile.median.toFixed(1),
+      sub: '50% 分位' },
+    { label: '近10年最低', value: pctile.min.toFixed(1),
+      sub: '0% 分位（最低估值）' },
+    { label: '近10年最高', value: pctile.max.toFixed(1),
+      sub: '100% 分位（最高估值）' }
+  ];
+  document.getElementById('percentileCards').innerHTML = pctileCards.map(function (c, i) {
+    var valColor = i === 1 ? pctileColor : '';
+    return '<div class="card card-hover">' +
+      '<div class="card-label">' + Dash.esc(c.label) + '</div>' +
+      '<div class="card-value" style="' + (valColor ? 'color:' + valColor : '') + '">' + Dash.esc(c.value) + '</div>' +
+      '<div class="card-sub">' + Dash.esc(c.sub) + '</div>' +
+    '</div>';
+  }).join('');
+
+  // ===== 分位数图表 =====
+  var pctileChart = echarts.init(document.getElementById('percentileChart'));
+  var peSeries = pctile.series;
+  pctileChart.setOption({
+    tooltip: { trigger: 'axis' },
+    grid: { left: 50, right: 20, top: 30, bottom: 40 },
+    xAxis: { type: 'time' },
+    yAxis: { type: 'value', name: 'PE', scale: true },
+    series: [{
+      name: 'PE-TTM', type: 'line', data: peSeries,
+      smooth: true, symbol: 'circle', symbolSize: 5,
+      lineStyle: { color: '#3b82f6', width: 2 },
+      areaStyle: { color: 'rgba(59,130,246,0.12)' },
+      markLine: {
+        symbol: 'none', silent: true,
+        data: [
+          { yAxis: pctile.median, lineStyle: { color: '#d97706', type: 'dashed', width: 1.5 }, label: { formatter: '中位数 ' + pctile.median } },
+          { yAxis: pctile.currentPE, lineStyle: { color: '#ef4444', type: 'dashed', width: 1.5 }, label: { formatter: '当前 ' + pctile.currentPE } }
+        ]
+      }
+    }]
+  });
+
   // ===== Siblis PE 历史 =====
   var siblisChart = echarts.init(document.getElementById('siblisChart'));
   siblisChart.setOption({
@@ -103,14 +164,12 @@
 
   // ===== PE 与指数双轴 =====
   var peIndexChart = echarts.init(document.getElementById('peIndexChart'));
-  // 合并 Siblis PE 与指数点位（指数用月末值）
   var idxMap = {};
   D.index.forEach(function (p) { idxMap[p[0].slice(0, 7)] = p[1]; });
   var peData = D.siblis_pe.map(function (p) { return [p[0], p[1]]; });
   var idxAligned = D.siblis_pe.map(function (p) {
     var m = p[0].slice(0, 7);
-    var v = idxMap[m];
-    return [p[0], v];
+    return [p[0], idxMap[m]];
   });
   peIndexChart.setOption({
     tooltip: { trigger: 'axis' },

@@ -23,7 +23,7 @@
 
     <!-- 核心指标卡片 -->
     <section class="section" id="key-metrics">
-      <div class="section-header"><h2>核心指标 · 最近完整年度（FY2025）</h2></div>
+      <div class="section-header"><h2>核心指标 · 最近完整年度（FY2025）+ 2026年YTD</h2></div>
       <div class="card-grid" id="metricCards"></div>
     </section>
 
@@ -32,7 +32,7 @@
       <div class="section-header"><h2>纳指100 指数走势（月线）</h2></div>
       <div class="chart-card">
         <h3>纳指100 月度收盘（2016-2026）</h3>
-        <div class="chart-desc" id="indexDesc">纳指100指数月末收盘，数据截至 ' + meta.asOf + '。新浪财经日K线，月粒度。</div>
+        <div class="chart-desc" id="indexDesc"></div>
         <div class="chart-box" id="indexChart"></div>
       </div>
     </section>
@@ -42,12 +42,12 @@
       <div class="section-header"><h2>营收与利润趋势</h2></div>
       <div class="chart-card">
         <h3>纳指100 整体营收（年度，亿美元）</h3>
-        <div class="chart-desc">成分股财报加总，SEC 官方口径。按自然年对齐各公司财年期末日；2026年为进行中年度（仅20家覆盖），数值不完整。</div>
+        <div class="chart-desc" id="revChartDesc"></div>
         <div class="chart-box sm" id="revChart"></div>
       </div>
       <div class="chart-card">
         <h3>纳指100 整体净利润（年度，亿美元）</h3>
-        <div class="chart-desc">成分股财报加总，SEC 官方口径。2026年为进行中年度，数值不完整。</div>
+        <div class="chart-desc" id="niChartDesc"></div>
         <div class="chart-box sm" id="niChart"></div>
       </div>
     </section>
@@ -57,12 +57,12 @@
       <div class="section-header"><h2>自由现金流与 ROE</h2></div>
       <div class="chart-card">
         <h3>纳指100 整体自由现金流（年度，亿美元）</h3>
-        <div class="chart-desc">经营现金流 − 资本开支（SEC 财报口径），成分股加总。2026年不完整。</div>
+        <div class="chart-desc" id="fcfChartDesc"></div>
         <div class="chart-box sm" id="fcfChart"></div>
       </div>
       <div class="chart-card">
         <h3>纳指100 整体 ROE（年度，%）</h3>
-        <div class="chart-desc">整体净利 / 期末股东权益（成分股加总）。2026年仅20家覆盖，ROE偏高。</div>
+        <div class="chart-desc" id="roeChartDesc"></div>
         <div class="chart-box sm" id="roeChart"></div>
       </div>
     </section>
@@ -70,19 +70,13 @@
     <!-- 七姐妹概览 -->
     <section class="section" id="mag7-section">
       <div class="section-header">
-        <h2>科技七姐妹</h2>
+        <h2>科技七姐妹 · 2026年YTD</h2>
         <a class="more" href="pages/mag7.html">查看详细分析 →</a>
       </div>
       <div class="card-grid" id="mag7Cards"></div>
     </section>
 
-    <div class="note">
-      <strong>数据口径说明：</strong><br>
-      · 年度数据（营收/净利/FCF/ROE）采用 SEC 官方财报成分股加总，按自然年对齐各公司财年期末日。FY2025 为最近完整年度（94家覆盖）；2026 年为进行中年度，仅20家有财报数据，数值不完整。<br>
-      · PE-TTM（加总法）= 最新总市值快照 ÷ 滚动四季度净利加总（市值截至 ' + meta.asOf + '，利润覆盖近4个季度）。<br>
-      · PE-季度年化 = 最新总市值快照 ÷ 最新单季度净利 × 4（市值与利润时点更接近，但单季度波动大）。<br>
-      · PE-TTM（Siblis官方）基于指数官方 EPS 口径，与加总法差异属正常。详见<a href="pages/methodology.html">数据说明</a>。
-    </div>
+    <div class="note" id="dataNote"></div>
   </div>
 </main>
 <script>
@@ -90,21 +84,21 @@
   var D = window.NDX_DATA;
   var meta = D.meta;
   var annual = D.annual;
+  var ytd = D.ytd;
 
   // ===== Hero 统计 =====
-  // 找最近完整年度（覆盖>=90家的）和最新年度（进行中）
-  var lastFullYear = null;  // 最近完整年度
-  var latestYear = annual[annual.length - 1]; // 最新年度（可能进行中）
+  var lastFullYear = null;
   for (var i = annual.length - 1; i >= 0; i--) {
     if (annual[i].revCount >= 90) { lastFullYear = annual[i]; break; }
   }
   if (!lastFullYear) lastFullYear = annual[annual.length - 2];
-  var prevFullYear = annual[annual.length - 3]; // 上一个完整年度（用于同比）
+  var prevFullYear = annual[annual.length - 3];
 
   document.getElementById('heroStats').innerHTML =
     '<span class="badge badge-accent">数据截至 ' + meta.asOf + '</span> ' +
     '<span class="badge">完整年度至 FY' + lastFullYear.year + '</span> ' +
-    '<span class="badge">' + (D.quarterly.length) + ' 季度数据点</span>';
+    '<span class="badge">' + ytd.label + ' · ' + ytd.count + '家覆盖</span> ' +
+    '<span class="badge">' + D.quarterly.length + ' 季度数据点</span>';
 
   // ===== 核心指标卡片 =====
   var peInfo = D.pe;
@@ -112,23 +106,36 @@
   var fyLabel = 'FY' + lastFullYear.year;
   var prevLabel = 'FY' + prevFullYear.year;
 
+  function yoyStr(curr, prev) {
+    if (curr == null || prev == null || prev === 0) return '—';
+    var pct = (curr / prev - 1) * 100;
+    return (pct > 0 ? '+' : '') + pct.toFixed(1) + '%';
+  }
+
   var metricCards = [
     { label: 'PE-TTM（加总法）', value: peInfo.peTtm ? peInfo.peTtm.toFixed(1) : '—',
       sub: '市值' + Dash.fmtB(peInfo.totalMcap) + ' / TTM净利' + Dash.fmtB(peInfo.ttmNi) + ' · 市值截至' + (peInfo.mcapAsOf || meta.asOf) },
     { label: 'PE-季度年化', value: peInfo.peAnnualized ? peInfo.peAnnualized.toFixed(1) : '—',
       sub: '市值' + Dash.fmtB(peInfo.totalMcap) + ' / 最新Q净利×4=' + Dash.fmtB(peInfo.annualizedNi) + ' · 覆盖' + peInfo.latestQCount + '家' },
     { label: 'PE-TTM（Siblis官方）', value: siblisLatest ? siblisLatest[1].toFixed(1) : '—',
-      sub: siblisLatest ? '截至' + siblisLatest[0].slice(0,7) + ' · 指数官方EPS口径' : '' },
+      sub: siblisLatest ? '截至' + siblisLatest[0].slice(0,7) + ' · 指数官方EPS口径 · 分位数' + D.pe_percentile.percentile + '%' : '' },
     { label: '整体营收（' + fyLabel + '）', value: lastFullYear ? (lastFullYear.revenue / 1e8).toFixed(0) + '亿' : '—',
-      sub: lastFullYear && prevFullYear ? ('同比 ' + Dash.fmtPct((lastFullYear.revenue / prevFullYear.revenue - 1) * 100) + ' · 覆盖' + lastFullYear.revCount + '家') : '' },
+      sub: '同比 ' + yoyStr(lastFullYear.revenue, prevFullYear.revenue) + ' · 覆盖' + lastFullYear.revCount + '家' },
     { label: '整体净利（' + fyLabel + '）', value: lastFullYear ? (lastFullYear.netincome / 1e8).toFixed(0) + '亿' : '—',
-      sub: lastFullYear && prevFullYear ? ('同比 ' + Dash.fmtPct((lastFullYear.netincome / prevFullYear.netincome - 1) * 100) + ' · 覆盖' + lastFullYear.niCount + '家') : '' },
+      sub: '同比 ' + yoyStr(lastFullYear.netincome, prevFullYear.netincome) + ' · 覆盖' + lastFullYear.niCount + '家' },
     { label: '整体FCF（' + fyLabel + '）', value: lastFullYear.fcf ? (lastFullYear.fcf / 1e8).toFixed(0) + '亿' : '—',
       sub: '经营现金流 − 资本开支 · 覆盖' + lastFullYear.fcfCount + '家' },
     { label: '整体ROE（' + fyLabel + '）', value: lastFullYear.roe ? lastFullYear.roe.toFixed(1) + '%' : '—',
-      sub: '净利/期末股东权益 · 覆盖' + lastFullYear.eqCount + '家' },
+      sub: '净利/期末股东权益 · 覆盖' + lastFullYear.roeCount + '家（NI与Equity都有）' },
     { label: '七姐妹市值权重', value: D.mag7.weight ? D.mag7.weight.toFixed(1) + '%' : '—',
       sub: '占纳指100总市值 · 截至' + (peInfo.mcapAsOf || meta.asOf) },
+    // YTD 卡片
+    { label: '2026 YTD营收（' + ytd.label + '）', value: (ytd.rev / 1e8).toFixed(0) + '亿',
+      sub: '同比 ' + (ytd.revYoy != null ? Dash.fmtPct(ytd.revYoy) : '—') + ' · 覆盖' + ytd.count + '家' },
+    { label: '2026 YTD净利（' + ytd.label + '）', value: (ytd.ni / 1e8).toFixed(0) + '亿',
+      sub: '同比 ' + (ytd.niYoy != null ? Dash.fmtPct(ytd.niYoy) : '—') + ' · 覆盖' + ytd.count + '家' },
+    { label: '2026 YTD FCF（' + ytd.label + '）', value: (ytd.fcf / 1e8).toFixed(0) + '亿',
+      sub: '同比 ' + (ytd.fcfYoy != null ? Dash.fmtPct(ytd.fcfYoy) : '—') + ' · 覆盖' + ytd.count + '家' },
     { label: '成分股数量', value: '101', sub: '剔除 SPCX(私有) 与 GOOG 双股' }
   ];
   document.getElementById('metricCards').innerHTML = metricCards.map(function (c) {
@@ -141,6 +148,7 @@
 
   // ===== 指数走势 =====
   var indexChart = echarts.init(document.getElementById('indexChart'));
+  document.getElementById('indexDesc').textContent = '纳指100指数月末收盘，数据截至 ' + meta.asOf + '。新浪财经日K线，月粒度。';
   var idxData = D.index;
   indexChart.setOption({
     tooltip: { trigger: 'axis' },
@@ -155,26 +163,48 @@
     }]
   });
 
-  // ===== 营收柱状图（含同比） =====
+  // ===== 营收柱状图（含同比 + 26年YTD标记） =====
   var revChart = echarts.init(document.getElementById('revChart'));
   var revData = annual;
   var revX = revData.map(function (p) { return p.year; });
-  var revVals = revData.map(function (p) { return Math.round(p.revenue / 1e8); }); // 亿美元
+  var revVals = revData.map(function (p) { return Math.round(p.revenue / 1e8); });
   var revYoy = revData.map(function (p, i) {
     if (i === 0) return null;
     return Math.round((p.revenue / revData[i-1].revenue - 1) * 1000) / 10;
   });
+  // 26年YTD标记
+  var ytdRevY = (ytd.rev / 1e8).toFixed(0);
+  document.getElementById('revChartDesc').innerHTML =
+    '成分股财报加总，SEC 官方口径。<strong>2026年为YTD累计（' + ytd.label + '），不与完整年度直接对比。</strong>柱状图蓝线为年度同比%。';
   revChart.setOption({
-    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' },
+      formatter: function(params) {
+        var s = params[0].axisValue + '<br/>';
+        params.forEach(function(p) {
+          s += p.marker + p.seriesName + ': ' + (p.value != null ? p.value + ' 亿美元' : '—') + '<br/>';
+        });
+        if (params[0] && params[0].axisValue === '2026') {
+          s += '<br>⚠ 2026为' + ytd.label + '，非完整年度';
+        }
+        return s;
+      }
+    },
     legend: { data: ['营收(亿美元)', '同比(%)'], top: 0 },
     grid: { left: 60, right: 60, top: 40, bottom: 40 },
-    xAxis: { type: 'category', data: revX },
+    xAxis: { type: 'category', data: revX,
+      axisLabel: { formatter: function(v) { return v === '2026' ? v + '\n(YTD)' : v; } }
+    },
     yAxis: [
       { type: 'value', name: '亿美元', position: 'left' },
       { type: 'value', name: '同比%', position: 'right', axisLabel: { formatter: '{value}%' } }
     ],
     series: [
-      { name: '营收(亿美元)', type: 'bar', data: revVals, itemStyle: { color: '#3b82f6' }, barWidth: '55%' },
+      { name: '营收(亿美元)', type: 'bar', data: revVals, itemStyle: { color: '#3b82f6' }, barWidth: '55%',
+        markPoint: {
+          symbol: 'pin', symbolSize: 50,
+          data: revX.indexOf('2026') >= 0 ? [{ name: 'YTD', coord: ['2026', revVals[revX.indexOf('2026')]], value: ytd.label }] : []
+        }
+      },
       { name: '同比(%)', type: 'line', yAxisIndex: 1, data: revYoy, smooth: true, symbol: 'circle', symbolSize: 4,
         lineStyle: { color: '#d97706', width: 2 }, itemStyle: { color: '#d97706' }, connectNulls: true }
     ]
@@ -187,11 +217,15 @@
     if (i === 0) return null;
     return Math.round((p.netincome / revData[i-1].netincome - 1) * 1000) / 10;
   });
+  document.getElementById('niChartDesc').innerHTML =
+    '成分股财报加总，SEC 官方口径。<strong>2026年为YTD累计（' + ytd.label + '），不与完整年度直接对比。</strong>';
   niChart.setOption({
     tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
     legend: { data: ['净利润(亿美元)', '同比(%)'], top: 0 },
     grid: { left: 60, right: 60, top: 40, bottom: 40 },
-    xAxis: { type: 'category', data: revX },
+    xAxis: { type: 'category', data: revX,
+      axisLabel: { formatter: function(v) { return v === '2026' ? v + '\n(YTD)' : v; } }
+    },
     yAxis: [
       { type: 'value', name: '亿美元', position: 'left' },
       { type: 'value', name: '同比%', position: 'right', axisLabel: { formatter: '{value}%' } }
@@ -206,10 +240,14 @@
   // ===== FCF 图 =====
   var fcfChart = echarts.init(document.getElementById('fcfChart'));
   var fcfVals = revData.map(function (p) { return p.fcf == null ? null : Math.round(p.fcf / 1e8); });
+  document.getElementById('fcfChartDesc').innerHTML =
+    '经营现金流 − 资本开支（SEC 财报口径），成分股加总。2026年为YTD累计。';
   fcfChart.setOption({
     tooltip: { trigger: 'axis' },
     grid: { left: 60, right: 20, top: 30, bottom: 40 },
-    xAxis: { type: 'category', data: revX },
+    xAxis: { type: 'category', data: revX,
+      axisLabel: { formatter: function(v) { return v === '2026' ? v + '\n(YTD)' : v; } }
+    },
     yAxis: { type: 'value', name: '亿美元' },
     series: [{
       name: '自由现金流', type: 'bar', data: fcfVals,
@@ -220,6 +258,8 @@
   // ===== ROE 图 =====
   var roeChart = echarts.init(document.getElementById('roeChart'));
   var roeVals = revData.map(function (p) { return p.roe == null ? null : Math.round(p.roe * 10) / 10; });
+  document.getElementById('roeChartDesc').innerHTML =
+    '整体净利 / 期末股东权益。仅统计 NI 与 Equity 都有的公司（' + lastFullYear.roeCount + '家），避免无权益数据的 ADR 公司拉高 ROE。';
   roeChart.setOption({
     tooltip: { trigger: 'axis' },
     grid: { left: 60, right: 20, top: 30, bottom: 40 },
@@ -233,22 +273,31 @@
     }]
   });
 
-  // ===== 七姐妹卡片 =====
-  var mag7Cards = ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'TSLA'].map(function (t) {
+  // ===== 七姐妹卡片（2026 YTD） =====
+  var MAG7 = ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'TSLA'];
+  var mag7Cards = MAG7.map(function (t) {
     var info = D.mag7.meta[t];
-    var series = D.mag7.series[t];
-    var lastQ = series.quarterly_revenue[series.quarterly_revenue.length - 1];
-    var lastN = series.quarterly_netincome[series.quarterly_netincome.length - 1];
+    var ytdInfo = D.mag7.ytdData[t];
     var mc = D.mag7.marketcap[t] || {};
+    var revYoy = ytdInfo.revYoy != null ? Dash.fmtPct(ytdInfo.revYoy) : '—';
+    var niYoy = ytdInfo.niYoy != null ? Dash.fmtPct(ytdInfo.niYoy) : '—';
     return '<div class="card card-hover">' +
       '<div class="card-label">' + Dash.esc(info.name) + '</div>' +
-      '<div class="card-value">' + Dash.fmtB(lastQ[1]) + '</div>' +
-      '<div class="card-sub">最新季度营收 · ' + Dash.esc(lastQ[0]) + '</div>' +
-      '<div class="card-sub">净利 ' + Dash.fmtB(lastN[1]) + '</div>' +
+      '<div class="card-value">' + (ytdInfo.rev / 1e8).toFixed(0) + '亿</div>' +
+      '<div class="card-sub">YTD营收 · ' + Dash.esc(ytdInfo.label) + ' · 同比 ' + revYoy + '</div>' +
+      '<div class="card-sub">YTD净利 ' + (ytdInfo.ni / 1e8).toFixed(0) + '亿 · 同比 ' + niYoy + '</div>' +
       (mc.value ? '<div class="card-delta">市值 ' + Dash.esc(mc.note) + '</div>' : '') +
     '</div>';
   }).join('');
   document.getElementById('mag7Cards').innerHTML = mag7Cards;
+
+  // ===== 数据口径说明 =====
+  document.getElementById('dataNote').innerHTML =
+    '<strong>数据口径说明：</strong><br>' +
+    '· 年度数据（营收/净利/FCF/ROE）采用 SEC 官方财报成分股加总，按自然年对齐各公司财年期末日。FY2025 为最近完整年度（' + lastFullYear.revCount + '家覆盖）；2026 年为' + ytd.label + '，覆盖' + ytd.count + '家。<br>' +
+    '· <strong>ROE 已修复</strong>：仅统计 NI 与 Equity 都有的公司子集（' + lastFullYear.roeCount + '家），避免无权益数据的 ADR 公司拉高 ROE。<br>' +
+    '· <strong>2026 YTD</strong> = 各公司 2026 年已报告季度累计值，2025 同期为可比口径（同季度数）。YTD 同比 = 2026 YTD / 2025 同期 − 1。<br>' +
+    '· PE-TTM（加总法）= 最新总市值快照 ÷ 滚动四季度净利加总（市值截至 ' + meta.asOf + '）。PE-TTM（Siblis官方）基于指数官方 EPS 口径，与加总法差异属正常。详见<a href="pages/methodology.html">数据说明</a>。';
 </script>
 </body>
 </html>
