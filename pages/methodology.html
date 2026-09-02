@@ -40,8 +40,9 @@
             <tr><td>指数整体营收/净利</td><td>成分股财报加总</td><td>全部成分股同一财年/财季值求和；2026年为进行中年度，为部分年度值</td></tr>
             <tr><td>自由现金流（FCF）</td><td>经营现金流 − 资本开支</td><td>SEC 财报口径，年度加总</td></tr>
             <tr><td>ROE</td><td>整体净利 / 期末股东权益</td><td>年度口径，分母为当年年末股东权益加总</td></tr>
-            <tr><td>PE-TTM（加总法）</td><td>总市值 / 滚动四季度净利</td><td>市值加权口径，市值取 stockanalysis 快照</td></tr>
-            <tr><td>PE-TTM（Siblis）</td><td>指数官方 EPS 口径</td><td>Siblis Research 官方序列，免费版仅2023Q4起9个点</td></tr>
+            <tr><td>PE-TTM（加总法）</td><td>总市值 / 滚动四季度净利</td><td>市值加权口径，市值取 stockanalysis 快照，利润覆盖最近4个财季（已剔除 GOOG 重复、SPCX 未上市）</td></tr>
+            <tr><td>PE-季度年化</td><td>总市值 / 最新单季度净利 × 4</td><td>利润时点与市值更接近，但单季波动大，仅作参考</td></tr>
+            <tr><td>PE-TTM（Siblis）</td><td>指数官方 EPS 口径</td><td>Siblis Research 官方序列（指数加权口径），免费版仅2023Q4起9个点</td></tr>
             <tr><td>指数走势</td><td>月末收盘价</td><td>新浪财经日K线，月粒度</td></tr>
           </tbody>
         </table>
@@ -55,7 +56,8 @@
         · Alphabet 含 GOOGL/GOOG 双股，聚合时仅计 GOOGL（市值较大），避免重复。<br>
         · SPCX（SpaceX）为私有公司，未上市，剔除出财务聚合。<br>
         · 实际参与财务加总的成分股为 101 家；剔除后 7 家 SEC 数据不足的 ADR/新股（ASML/ARM/PDD等），在对应年份如实标注缺失。<br>
-        <strong>财年差异：</strong>各成分股财年结束日不同（如 NVDA 为 1 月、苹果 9 月），年度聚合按自然年对齐财报期末日，季度数据按各公司财季序列汇总。
+        <strong>财年差异：</strong>各成分股财年结束日不同（如 NVDA 为 1 月、苹果 9 月），年度聚合按自然年对齐财报期末日，季度数据按各公司财季序列汇总。<br>
+        <strong>PE 口径差异：</strong>加总法 PE 29.5（截至2026-08-28）与 Siblis 官方 35.2（截至2026-06-30）存在差异，主要源于：① 指数官方按流通市值加权 EPS 计算，与简单加总法不同；② 市值/利润统计时点不同；③ 亏损公司处理方式不同（本看板包含亏损公司，其负净利压低整体 PE）；④ 个别公司（如 ASML/ARM/PDD 等 ADR）SEC 数据不足影响覆盖。三者均如实标注，不做统一修正。
       </div>
     </section>
 
