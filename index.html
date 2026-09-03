@@ -170,12 +170,13 @@
   var revVals = revData.map(function (p) { return Math.round(p.revenue / 1e8); });
   var revYoy = revData.map(function (p, i) {
     if (i === 0) return null;
+    if (p.year === '2026') return ytd.revYoy != null ? Math.round(ytd.revYoy * 10) / 10 : null;
     return Math.round((p.revenue / revData[i-1].revenue - 1) * 1000) / 10;
   });
   // 26年YTD标记
   var ytdRevY = (ytd.rev / 1e8).toFixed(0);
   document.getElementById('revChartDesc').innerHTML =
-    '成分股财报加总，SEC 官方口径。<strong>2026年为YTD累计（截至' + ytd.label + '），不与完整年度直接对比。</strong>柱状图蓝线为年度同比%。';
+    '成分股财报加总，SEC 官方口径。<strong>2026年为YTD累计（截至' + ytd.label + '），同比线2026年与2025同期可比口径对比（非全年）。</strong>柱状图蓝线为年度同比%。';
   revChart.setOption({
     tooltip: { trigger: 'axis', axisPointer: { type: 'cross' },
       formatter: function(params) {
@@ -184,7 +185,7 @@
           s += p.marker + p.seriesName + ': ' + (p.value != null ? p.value + ' 亿美元' : '—') + '<br/>';
         });
         if (params[0] && params[0].axisValue === '2026') {
-          s += '<br>⚠ 2026为截至' + ytd.label + '，非完整年度';
+          s += '<br>⚠ 2026为截至' + ytd.label + '，同比为2025同期可比口径';
         }
         return s;
       }
@@ -215,10 +216,11 @@
   var niVals = revData.map(function (p) { return Math.round(p.netincome / 1e8); });
   var niYoy = revData.map(function (p, i) {
     if (i === 0) return null;
+    if (p.year === '2026') return ytd.niYoy != null ? Math.round(ytd.niYoy * 10) / 10 : null;
     return Math.round((p.netincome / revData[i-1].netincome - 1) * 1000) / 10;
   });
   document.getElementById('niChartDesc').innerHTML =
-    '成分股财报加总，SEC 官方口径。<strong>2026年为YTD累计（截至' + ytd.label + '），不与完整年度直接对比。</strong>';
+    '成分股财报加总，SEC 官方口径。<strong>2026年为YTD累计（截至' + ytd.label + '），同比线2026年与2025同期可比口径对比（非全年）。</strong>';
   niChart.setOption({
     tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
     legend: { data: ['净利润(亿美元)', '同比(%)'], top: 0 },
