@@ -23,7 +23,7 @@
       '<div class="nav-inner">' +
         '<a class="logo" href="' + P + 'index.html">' +
           '<span class="logo-badge">NDX</span>' +
-          '<span class="logo-text"><span class="logo-line1">纳指100大数据追踪</span><span class="logo-line2">Nasdaq-100 Dashboard</span></span>' +
+          '<span class="logo-text"><span class="logo-line1">广州番禺有趣打工仔小冯的纳指100大数据跟踪</span><span class="logo-line2">Nasdaq-100 Dashboard</span></span>' +
         '</a>' +
         '<nav class="desktop">' + links + '</nav>' +
         '<div class="nav-actions">' +
