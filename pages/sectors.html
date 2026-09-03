@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%233b82f6%22/><text x=%2250%22 y=%2268%22 font-size=%2240%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>NDX</text></svg>">
   <title>行业细分 · 纳指100大数据追踪看板</title>
-  <meta name="description" content="纳指100剔除七姐妹后按行业细分，YTD营收/净利/FCF与同比，季度趋势。">
+  <meta name="description" content="纳指100剔除七姐妹后按行业细分，YTD营收/净利/FCF与同比，年度数据表格。">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/data.js"></script>
   <script src="../js/echarts.min.js"></script>
@@ -17,7 +17,7 @@
     <section class="hero">
       <div class="breadcrumb">Nasdaq-100 · 行业细分</div>
       <h1>行业细分</h1>
-      <p class="subtitle">剔除科技七姐妹后，按行业板块聚合纳指100成分股，展示2026年YTD累计营收/净利/FCF与同比、近5年季度趋势。</p>
+      <p class="subtitle">剔除科技七姐妹后，按行业板块聚合纳指100成分股，展示2026年YTD累计营收/净利/FCF与同比、年度数据表格。</p>
       <div class="hero-stats" id="heroStats"></div>
     </section>
 
@@ -31,7 +31,7 @@
 
     <!-- 板块 YTD 营收表格 -->
     <section class="section" id="rev-section">
-      <div class="section-header"><h2>各板块营收 · 2026年YTD累计</h2></div>
+      <div class="section-header"><h2>各板块营收 · 2026年YTD累计（截至<span id="revYtdLabel"></span>）</h2></div>
       <div class="table-wrap">
         <table id="revTable">
           <thead>
@@ -41,7 +41,7 @@
               <th class="num">YTD营收(亿)</th>
               <th class="num">2025同期(亿)</th>
               <th class="num">同比</th>
-              <th class="num">YTD覆盖</th>
+              <th class="num">覆盖</th>
             </tr>
           </thead>
           <tbody id="revBody"></tbody>
@@ -52,7 +52,7 @@
 
     <!-- 板块 YTD 净利表格 -->
     <section class="section" id="ni-section">
-      <div class="section-header"><h2>各板块净利润 · 2026年YTD累计</h2></div>
+      <div class="section-header"><h2>各板块净利润 · 2026年YTD累计（截至<span id="niYtdLabel"></span>）</h2></div>
       <div class="table-wrap">
         <table id="niTable">
           <thead>
@@ -71,7 +71,7 @@
 
     <!-- 板块 YTD FCF 表格 -->
     <section class="section" id="fcf-section">
-      <div class="section-header"><h2>各板块自由现金流 · 2026年YTD累计</h2></div>
+      <div class="section-header"><h2>各板块自由现金流 · 2026年YTD累计（截至<span id="fcfYtdLabel"></span>）</h2></div>
       <div class="table-wrap">
         <table id="fcfTable">
           <thead>
@@ -88,28 +88,36 @@
       </div>
     </section>
 
-    <!-- 板块营收趋势 -->
-    <section class="section" id="trend-section">
-      <div class="section-header"><h2>板块营收趋势（近5年季度）</h2></div>
-      <div class="chart-card">
-        <h3>各板块季度营收（亿美元）</h3>
-        <div class="chart-desc">成分股季度财报加总。</div>
-        <div class="chart-box" id="trendChart"></div>
+    <!-- 板块年度营收表格 -->
+    <section class="section" id="annual-rev-section">
+      <div class="section-header"><h2>各板块年度营收（亿美元）</h2></div>
+      <div class="table-wrap">
+        <div style="overflow-x:auto;">
+        <table id="annualRevTable" class="wide-table">
+          <thead id="annualRevHead"></thead>
+          <tbody id="annualRevBody"></tbody>
+          <tfoot id="annualRevFoot"></tfoot>
+        </table>
+        </div>
       </div>
     </section>
 
-    <!-- 板块净利趋势 -->
-    <section class="section" id="ni-trend-section">
-      <div class="section-header"><h2>板块净利润趋势（近5年季度）</h2></div>
-      <div class="chart-card">
-        <h3>各板块季度净利润（亿美元）</h3>
-        <div class="chart-desc">成分股季度财报加总。</div>
-        <div class="chart-box" id="niTrendChart"></div>
+    <!-- 板块年度净利表格 -->
+    <section class="section" id="annual-ni-section">
+      <div class="section-header"><h2>各板块年度净利润（亿美元）</h2></div>
+      <div class="table-wrap">
+        <div style="overflow-x:auto;">
+        <table id="annualNiTable" class="wide-table">
+          <thead id="annualNiHead"></thead>
+          <tbody id="annualNiBody"></tbody>
+          <tfoot id="annualNiFoot"></tfoot>
+        </table>
+        </div>
       </div>
     </section>
 
     <div class="note">
-      <strong>说明：</strong>板块划分为自定义口径（基于纳指100实际成分），剔除七姐妹后聚合。YTD 为各成分股 2026 年已报告季度累计值，同比为同期可比口径（同季度数对比）。各公司财季不完全对齐，季度趋势以财报期末日归集。
+      <strong>说明：</strong>板块划分为自定义口径（基于纳指100实际成分），剔除七姐妹后聚合。YTD 为各成分股 2026 年已报告季度累计值（截至<span id="noteYtdLabel"></span>），同比为同期可比口径（同季度数对比）。年度数据从季度财报按自然年汇总，2026列为YTD累计。
     </div>
   </div>
 </main>
@@ -119,6 +127,8 @@
   var sectors = D.sectors;
   var ytd = D.ytd;
   var keys = Object.keys(sectors);
+  var ytdLabel = ytd.label || '';
+  var ytdShort = ytd.labelShort || '';
 
   // ===== Hero =====
   var totalCount = 0;
@@ -126,7 +136,13 @@
   document.getElementById('heroStats').innerHTML =
     '<span class="badge badge-accent">' + keys.length + ' 大板块</span> ' +
     '<span class="badge">剔除七姐妹后 ' + totalCount + ' 家</span> ' +
-    '<span class="badge">' + ytd.label + '</span>';
+    '<span class="badge">截至' + ytdLabel + '</span>';
+
+  // 标签填充
+  document.getElementById('revYtdLabel').textContent = ytdLabel;
+  document.getElementById('niYtdLabel').textContent = ytdLabel;
+  document.getElementById('fcfYtdLabel').textContent = ytdLabel;
+  document.getElementById('noteYtdLabel').textContent = ytdLabel;
 
   // ===== 板块营收占比饼图 =====
   var shareChart = echarts.init(document.getElementById('shareChart'));
@@ -157,11 +173,10 @@
       '<td class="num">' + (y.rev / 1e8).toFixed(0) + '</td>' +
       '<td class="num">' + (y.prevRev / 1e8).toFixed(0) + '</td>' +
       '<td class="num ' + (y.revYoy > 0 ? 'text-up' : y.revYoy < 0 ? 'text-down' : '') + '">' + Dash.fmtPct(y.revYoy) + '</td>' +
-      '<td class="num">' + y.count + '家 · ' + Dash.esc(y.label) + '</td>' +
+      '<td class="num">' + y.count + '家</td>' +
     '</tr>';
   }).join('');
   document.getElementById('revBody').innerHTML = revRows;
-  // 合计
   var sumRev = 0, sumPrevRev = 0;
   keys.forEach(function (k) { sumRev += sectors[k].ytd.rev; sumPrevRev += sectors[k].ytd.prevRev; });
   document.getElementById('revFoot').innerHTML =
@@ -211,41 +226,85 @@
     '<td class="num">' + (sumPrevFcf / 1e8).toFixed(0) + '</td>' +
     '<td class="num ' + (sumFcf > sumPrevFcf ? 'text-up' : 'text-down') + '">' + (sumPrevFcf > 0 ? Dash.fmtPct((sumFcf/sumPrevFcf-1)*100) : '—') + '</td></tr>';
 
-  // ===== 板块营收趋势 =====
-  var trendChart = echarts.init(document.getElementById('trendChart'));
-  var trendSeries = keys.map(function (k) {
-    var s = sectors[k];
-    return {
-      name: s.label, type: 'line', smooth: true, symbol: 'none',
-      data: s.quarterly_revenue.map(function (p) { return [p[0], Math.round(p[1] / 1e8)]; })
-    };
+  // ===== 年度营收表格 =====
+  // 收集所有年份
+  var allYears = {};
+  keys.forEach(function (k) {
+    (sectors[k].annual_revenue || []).forEach(function (p) {
+      if (p[0] >= '2021') allYears[p[0]] = true;
+    });
   });
-  trendChart.setOption({
-    tooltip: { trigger: 'axis' },
-    legend: { top: 0, type: 'scroll' },
-    grid: { left: 60, right: 20, top: 40, bottom: 60 },
-    xAxis: { type: 'time' },
-    yAxis: { type: 'value', name: '亿美元' },
-    series: trendSeries
-  });
+  var yearsList = Object.keys(allYears).sort();
 
-  // ===== 板块净利趋势 =====
-  var niTrendChart = echarts.init(document.getElementById('niTrendChart'));
-  var niTrendSeries = keys.map(function (k) {
+  var revHeadHtml = '<tr><th>板块</th>';
+  yearsList.forEach(function(y) {
+    revHeadHtml += '<th class="num">' + (y === '2026' ? y + ' (YTD ' + ytdShort + ')' : y) + '</th>';
+  });
+  revHeadHtml += '</tr>';
+  document.getElementById('annualRevHead').innerHTML = revHeadHtml;
+
+  var revBodyHtml = keys.map(function (k) {
     var s = sectors[k];
-    return {
-      name: s.label, type: 'line', smooth: true, symbol: 'none',
-      data: s.quarterly_netincome.map(function (p) { return [p[0], Math.round(p[1] / 1e8)]; })
-    };
+    var aRev = {};
+    (s.annual_revenue || []).forEach(function (p) { aRev[p[0]] = p[1]; });
+    var row = '<tr><td><strong>' + Dash.esc(s.label) + '</strong></td>';
+    yearsList.forEach(function (y) {
+      var v = aRev[y] != null ? (aRev[y] / 1e8).toFixed(0) : '—';
+      var style = y === '2026' ? ' style="background:#f0f7ff;font-weight:bold;"' : '';
+      row += '<td class="num"' + style + '>' + v + '</td>';
+    });
+    row += '</tr>';
+    return row;
+  }).join('');
+  // 合计行
+  var revFootHtml = '<tr style="font-weight:bold;background:#f0f7ff;"><td>合计</td>';
+  yearsList.forEach(function (y) {
+    var sum = 0, has = false;
+    keys.forEach(function (k) {
+      var aRev = {};
+      (sectors[k].annual_revenue || []).forEach(function (p) { aRev[p[0]] = p[1]; });
+      if (aRev[y] != null) { sum += aRev[y]; has = true; }
+    });
+    revFootHtml += '<td class="num">' + (has ? (sum / 1e8).toFixed(0) : '—') + '</td>';
   });
-  niTrendChart.setOption({
-    tooltip: { trigger: 'axis' },
-    legend: { top: 0, type: 'scroll' },
-    grid: { left: 60, right: 20, top: 40, bottom: 60 },
-    xAxis: { type: 'time' },
-    yAxis: { type: 'value', name: '亿美元' },
-    series: niTrendSeries
+  revFootHtml += '</tr>';
+  document.getElementById('annualRevBody').innerHTML = revBodyHtml;
+  document.getElementById('annualRevFoot').innerHTML = revFootHtml;
+
+  // ===== 年度净利表格 =====
+  var niHeadHtml = '<tr><th>板块</th>';
+  yearsList.forEach(function(y) {
+    niHeadHtml += '<th class="num">' + (y === '2026' ? y + ' (YTD ' + ytdShort + ')' : y) + '</th>';
   });
+  niHeadHtml += '</tr>';
+  document.getElementById('annualNiHead').innerHTML = niHeadHtml;
+
+  var niBodyHtml = keys.map(function (k) {
+    var s = sectors[k];
+    var aNi = {};
+    (s.annual_netincome || []).forEach(function (p) { aNi[p[0]] = p[1]; });
+    var row = '<tr><td><strong>' + Dash.esc(s.label) + '</strong></td>';
+    yearsList.forEach(function (y) {
+      var v = aNi[y] != null ? (aNi[y] / 1e8).toFixed(0) : '—';
+      var style = y === '2026' ? ' style="background:#f0f7ff;font-weight:bold;"' : '';
+      row += '<td class="num"' + style + '>' + v + '</td>';
+    });
+    row += '</tr>';
+    return row;
+  }).join('');
+  var niFootHtml = '<tr style="font-weight:bold;background:#f0f7ff;"><td>合计</td>';
+  yearsList.forEach(function (y) {
+    var sum = 0, has = false;
+    keys.forEach(function (k) {
+      var aNi = {};
+      (sectors[k].annual_netincome || []).forEach(function (p) { aNi[p[0]] = p[1]; });
+      if (aNi[y] != null) { sum += aNi[y]; has = true; }
+    });
+    niFootHtml += '<td class="num">' + (has ? (sum / 1e8).toFixed(0) : '—') + '</td>';
+  });
+  niFootHtml += '</tr>';
+  document.getElementById('annualNiBody').innerHTML = niBodyHtml;
+  document.getElementById('annualNiFoot').innerHTML = niFootHtml;
 </script>
 </body>
 </html>

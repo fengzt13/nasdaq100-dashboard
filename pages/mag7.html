@@ -105,7 +105,7 @@
   // ===== Hero =====
   document.getElementById('heroStats').innerHTML =
     '<span class="badge badge-accent">七姐妹市值权重 ' + (mag7.weight ? mag7.weight.toFixed(1) + '%' : '—') + '</span> ' +
-    '<span class="badge">2026 YTD · ' + D.ytd.label + '</span>';
+    '<span class="badge">2026 YTD · 截至' + D.ytd.label + '</span>';
 
   // ===== 市值占比表格 =====
   var totalMcap = mag7.totalMcap || 0;
@@ -157,7 +157,7 @@
       '<td class="num">' + (ytd.ni / 1e8).toFixed(0) + '</td>' +
       '<td class="num ' + (ytd.niYoy > 0 ? 'text-up' : ytd.niYoy < 0 ? 'text-down' : '') + '">' + Dash.fmtPct(ytd.niYoy) + '</td>' +
       '<td class="num">' + (pe ? pe.toFixed(1) : '—') + '</td>' +
-      '<td class="num">' + ytd.qCount + 'Q (' + Dash.esc(ytd.label) + ')</td>' +
+      '<td class="num">' + ytd.qCount + 'Q（截至' + Dash.esc(ytd.label) + '）</td>' +
     '</tr>';
   }).join('');
   document.getElementById('detailBody').innerHTML = detailRows;
@@ -184,7 +184,7 @@
     var yoy = table['2026YTD'] && table['2025PY'] && table['2025PY'].rev > 0
       ? Dash.fmtPct((table['2026YTD'].rev / table['2025PY'].rev - 1) * 100) : '—';
     var yoyClass = table['2026YTD'] && table['2025PY'] && table['2026YTD'].rev > table['2025PY'].rev ? 'text-up' : 'text-down';
-    row += '<td class="num" style="background:#f0f7ff;font-weight:bold;">' + ytdRev + '<br><span class="text-muted">' + (table['2026YTD'] ? table['2026YTD'].label : '') + '</span></td>';
+    row += '<td class="num" style="background:#f0f7ff;font-weight:bold;">' + ytdRev + '<br><span class="text-muted">截至2026年' + (table['2026YTD'] ? table['2026YTD'].label : '') + '</span></td>';
     row += '<td class="num">' + prevRev + '</td>';
     row += '<td class="num ' + yoyClass + '">' + yoy + '</td>';
     row += '</tr>';
