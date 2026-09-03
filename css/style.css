@@ -192,6 +192,7 @@ thead th {
 tbody td { padding: 0.62rem 0.9rem; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
 tbody tr:hover td { background: var(--hover-bg); }
 tbody tr:last-child td { border-bottom: none; }
+th.num { text-align: right; white-space: nowrap; }
 td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .text-accent { color: var(--accent); font-weight: 600; }
