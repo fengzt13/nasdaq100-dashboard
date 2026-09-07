@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%233b82f6%22/><text x=%2250%22 y=%2268%22 font-size=%2240%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>NDX</text></svg>">
+  <title>空头观点追踪 · 纳指100大数据追踪看板</title>
+  <meta name="description" content="收录国外知名大佬/机构的看空言论，按逻辑分类，标注兑现状态追踪。观点客观收录，不构成投资建议。">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/bear-data.js"></script>
+  <script src="../js/site.js"></script>
+</head>
+<body>
+<main>
+  <div class="container">
+    <section class="hero">
+      <div class="breadcrumb">Nasdaq-100 · 空头观点追踪</div>
+      <h1>空头观点追踪</h1>
+      <p class="subtitle">客观收录国外知名大佬与机构近一年（2025-2026）的看空言论及历史著名案例，按"看空逻辑"分类（非按人分类），并标注每条言论的后续兑现状态，供对照观察。</p>
+      <div class="hero-stats" id="heroStats"></div>
+      <div class="note" style="margin-top:1.2rem;">
+        <strong>免责声明：</strong><span id="metaNote"></span>
+      </div>
+    </section>
+
+    <!-- 兑现状态分布 -->
+    <section class="section" id="status-section">
+      <div class="section-header"><h2>兑现状态分布（近期 10 条）</h2></div>
+      <div class="card-grid" id="statusCards"></div>
+    </section>
+
+    <!-- 逻辑分类筛选 -->
+    <section class="section" id="filter-section">
+      <div class="section-header"><h2>按看空逻辑筛选</h2></div>
+      <div class="filter-bar" id="filterBar"></div>
+      <div class="card-grid" id="recentCards"></div>
+    </section>
+
+    <!-- 历史著名案例 -->
+    <section class="section" id="history-section">
+      <div class="section-header"><h2>历史著名看空案例（大跌前）</h2></div>
+      <div class="timeline" id="historyList"></div>
+    </section>
+
+    <div class="note">
+      <strong>口径说明：</strong><br>
+      · 收录范围：近一年（2025-2026）公开报道的看空言论 + 历史上著名的"大跌前看空"案例（2000 / 2008 / 2020 / 2022）。<br>
+      · 分类逻辑：一条言论可按多个逻辑挂标签（A 估值 / B 盈利 / C AI泡沫 / D 流动性债务 / E 结构脆弱 / F 宏观地缘 / G 周期类比）。<br>
+      · 兑现状态为后续市场走势的客观记录（待验证 / 部分兑现 / 已兑现 / 未兑现 / 持续看空），不代表对观点本身的评价，更不构成投资建议。<br>
+      · 观点来源均已标注出处，仅客观收录，不评判对错。
+    </div>
+  </div>
+</main>
+<script>
+  Dash.init('bear');
+  var B = window.BEAR_DATA;
+
+  // ===== Hero 统计 =====
+  var total = B.recent.length;
+  var statusCount = {};
+  B.recent.forEach(function (r) { statusCount[r.status] = (statusCount[r.status] || 0) + 1; });
+  document.getElementById('heroStats').innerHTML =
+    '<span class="badge badge-accent">收录 ' + total + ' 条近期观点</span> ' +
+    '<span class="badge badge-accent">历史案例 ' + B.history.length + ' 条</span> ' +
+    '<span class="badge">7 类看空逻辑</span> ' +
+    '<span class="badge">更新 ' + B.meta.updated + '</span>';
+
+  document.getElementById('metaNote').textContent = B.meta.note;
+
+  // ===== 兑现状态分布卡片 =====
+  var statusOrder = ['pending', 'partial', 'confirmed', 'failed', 'ongoing'];
+  var statusCards = statusOrder.map(function (k) {
+    var st = B.statusMap[k];
+    var n = statusCount[k] || 0;
+    var pct = total ? Math.round(n / total * 100) : 0;
+    return {
+      label: st.label,
+      value: n + ' 条',
+      sub: '占比 ' + pct + '%',
+      color: st.color
+    };
+  });
+  document.getElementById('statusCards').innerHTML = statusCards.map(function (c) {
+    return '<div class="card card-hover">' +
+      '<div class="card-label">' + Dash.esc(c.label) + '</div>' +
+      '<div class="card-value" style="color:' + c.color + '">' + Dash.esc(c.value) + '</div>' +
+      '<div class="card-sub">' + Dash.esc(c.sub) + '</div>' +
+    '</div>';
+  }).join('');
+
+  // ===== 分类筛选 =====
+  var currentCat = 'ALL';
+  var filterBar = document.getElementById('filterBar');
+  var btns = [{ id: 'ALL', name: '全部', desc: '所有观点' }].concat(B.categories.map(function (c) {
+    return { id: c.id, name: c.id + ' · ' + c.name, desc: c.desc };
+  }));
+  filterBar.innerHTML = btns.map(function (b) {
+    return '<button class="filter-btn' + (b.id === currentCat ? ' active' : '') + '" data-cat="' + b.id + '">' +
+      '<span class="filter-name">' + Dash.esc(b.name) + '</span>' +
+      '<span class="filter-desc">' + Dash.esc(b.desc) + '</span>' +
+    '</button>';
+  }).join('');
+
+  // ===== 观点卡片渲染 =====
+  var recentCards = document.getElementById('recentCards');
+
+  function catBadges(cats) {
+    return cats.map(function (c) {
+      var cat = B.categories.filter(function (x) { return x.id === c; })[0];
+      return '<span class="cat-badge" title="' + Dash.esc(cat ? cat.desc : '') + '">' + Dash.esc(c) + ' ' + Dash.esc(cat ? cat.name : '') + '</span>';
+    }).join('');
+  }
+
+  function renderCards() {
+    var list = B.recent.filter(function (r) {
+      return currentCat === 'ALL' || r.cats.indexOf(currentCat) >= 0;
+    });
+    recentCards.innerHTML = list.map(function (r) {
+      var st = B.statusMap[r.status];
+      var sg = B.strengthMap[r.strength];
+      return '<div class="quote-card">' +
+        '<div class="quote-head">' +
+          '<div class="quote-person">' + Dash.esc(r.person) +
+            (r.role ? '<span class="quote-role"> · ' + Dash.esc(r.role) + '</span>' : '') +
+          '</div>' +
+          '<div class="quote-date">' + Dash.esc(r.date) + '</div>' +
+        '</div>' +
+        '<div class="quote-body">' + Dash.esc(r.quote) + '</div>' +
+        '<div class="quote-meta">' +
+          '<span class="cat-badges">' + catBadges(r.cats) + '</span>' +
+          '<span class="badge" style="color:' + sg.color + ';background:transparent;border:1px solid ' + sg.color + ';">' + Dash.esc(sg.label) + '</span>' +
+          '<span class="badge" style="background:' + st.color + '22;color:' + st.color + ';">' + Dash.esc(st.label) + '</span>' +
+        '</div>' +
+        '<div class="quote-note">' +
+          (r.target ? '<span><strong>对象：</strong>' + Dash.esc(r.target) + '</span>' : '') +
+          (r.note ? '<span><strong>备注：</strong>' + Dash.esc(r.note) + '</span>' : '') +
+        '</div>' +
+        '<div class="quote-source">来源：' + Dash.esc(r.source) + '</div>' +
+      '</div>';
+    }).join('');
+    if (!list.length) recentCards.innerHTML = '<div class="text-muted" style="padding:1rem;">该分类下暂无观点。</div>';
+  }
+  renderCards();
+
+  // 筛选点击
+  filterBar.addEventListener('click', function (e) {
+    var btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    currentCat = btn.getAttribute('data-cat');
+    filterBar.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.toggle('active', b === btn); });
+    renderCards();
+  });
+
+  // ===== 历史时间线 =====
+  var eraOrder = [];
+  B.history.forEach(function (h) { if (eraOrder.indexOf(h.era) < 0) eraOrder.push(h.era); });
+  document.getElementById('historyList').innerHTML = eraOrder.map(function (era) {
+    var items = B.history.filter(function (h) { return h.era === era; });
+    return '<div class="timeline-era">' +
+      '<h3 class="timeline-era-title">' + Dash.esc(era) + '</h3>' +
+      items.map(function (h) {
+        var st = B.statusMap[h.status];
+        return '<div class="timeline-item">' +
+          '<div class="timeline-dot" style="background:' + st.color + ';"></div>' +
+          '<div class="timeline-content">' +
+            '<div class="quote-head">' +
+              '<div class="quote-person">' + Dash.esc(h.person) +
+                (h.role ? '<span class="quote-role"> · ' + Dash.esc(h.role) + '</span>' : '') +
+              '</div>' +
+              '<div class="quote-date">' + Dash.esc(h.date) + '</div>' +
+            '</div>' +
+            '<div class="quote-body">' + Dash.esc(h.quote) + '</div>' +
+            '<div class="quote-meta">' +
+              catBadges(h.cats) +
+              '<span class="badge" style="background:' + st.color + '22;color:' + st.color + ';">' + Dash.esc(st.label) + '</span>' +
+            '</div>' +
+            '<div class="quote-note">' +
+              '<span><strong>结果：</strong>' + Dash.esc(h.result) + '</span>' +
+              (h.note ? '<span><strong>备注：</strong>' + Dash.esc(h.note) + '</span>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }).join('');
+</script>
+</body>
+</html>

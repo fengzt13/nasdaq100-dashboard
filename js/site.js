@@ -10,6 +10,7 @@
     { href: 'pages/mag7.html', label: '科技七姐妹', key: 'mag7' },
     { href: 'pages/sectors.html', label: '行业细分', key: 'sectors' },
     { href: 'pages/valuation.html', label: '估值(PE)', key: 'valuation' },
+    { href: 'pages/bear.html', label: '空头观点', key: 'bear' },
     { href: 'pages/methodology.html', label: '数据说明', key: 'methodology' },
   ];
 
