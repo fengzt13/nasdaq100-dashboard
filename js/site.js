@@ -16,13 +16,13 @@
 
   // 跨站链接（排除当前站）
   var SITES = [
-    { href: 'https://fengzt13.github.io/nasdaq100-dashboard/', label: '纳指100', key: 'nasdaq' },
-    { href: 'https://fengzt13.github.io/ai-dashboard/', label: 'AI追踪', key: 'ai' },
-    { href: 'https://fengzt13.github.io/metal-dashboard/', label: '金铜', key: 'metal' },
-    { href: 'https://fengzt13.github.io/hbm-dashboard/', label: 'HBM', key: 'hbm' },
-    { href: 'https://fengzt13.github.io/laolei-views/', label: '老雷', key: 'laolei' },
+    { href: 'https://fengzt13.github.io/nasdaq100-dashboard/', label: '纳指看板', key: 'nasdaq' },
+    { href: 'https://fengzt13.github.io/ai-dashboard/', label: 'AI看板', key: 'ai' },
+    { href: 'https://fengzt13.github.io/metal-dashboard/', label: '金铜看板', key: 'metal' },
+    { href: 'https://fengzt13.github.io/hbm-dashboard/', label: 'HBM看板', key: 'hbm' },
+    { href: 'https://fengzt13.github.io/laolei-views/', label: '老雷观点', key: 'laolei' },
   ];
-  var crossLinksHtml = SITES.filter(function (s) { return s.key !== 'nasdaq'; })
+  var crossLinksHtml = '<span class="cross-links-label">友情链接</span>' + SITES.filter(function (s) { return s.key !== 'nasdaq'; })
     .map(function (s) { return '<a class="cross-link" href="' + s.href + '">' + s.label + '</a>'; }).join('');
 
   function buildHeader(activeKey) {
