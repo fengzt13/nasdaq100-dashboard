@@ -108,6 +108,17 @@ nav.desktop::-webkit-scrollbar { display: none; }
 
 .nav-actions { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
 
+/* 跨站链接 */
+.cross-links { display: flex; align-items: center; gap: 0.3rem; }
+.cross-link {
+  color: var(--muted); text-decoration: none; font-size: 0.78rem; font-weight: 500;
+  padding: 0.32rem 0.6rem; border-radius: 9999px; border: 1px solid var(--border);
+  transition: color 0.2s, background 0.2s, border-color 0.2s; white-space: nowrap;
+}
+.cross-link:hover { color: var(--accent); background: var(--accent-bg); border-color: var(--accent-soft); }
+.cross-links-mobile { display: none; padding-top: 0.5rem; margin-top: 0.3rem; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 0.3rem; }
+.cross-links-mobile .cross-link { font-size: 0.85rem; }
+
 .mobile-menu-btn {
   display: none;
   background: none;

@@ -14,6 +14,17 @@
     { href: 'pages/methodology.html', label: '数据说明', key: 'methodology' },
   ];
 
+  // 跨站链接（排除当前站）
+  var SITES = [
+    { href: 'https://fengzt13.github.io/nasdaq100-dashboard/', label: '纳指100', key: 'nasdaq' },
+    { href: 'https://fengzt13.github.io/ai-dashboard/', label: 'AI追踪', key: 'ai' },
+    { href: 'https://fengzt13.github.io/metal-dashboard/', label: '金铜', key: 'metal' },
+    { href: 'https://fengzt13.github.io/hbm-dashboard/', label: 'HBM', key: 'hbm' },
+    { href: 'https://fengzt13.github.io/laolei-views/', label: '老雷', key: 'laolei' },
+  ];
+  var crossLinksHtml = SITES.filter(function (s) { return s.key !== 'nasdaq'; })
+    .map(function (s) { return '<a class="cross-link" href="' + s.href + '">' + s.label + '</a>'; }).join('');
+
   function buildHeader(activeKey) {
     var header = document.createElement('header');
     var links = NAV.map(function (it) {
@@ -28,12 +39,13 @@
         '</a>' +
         '<nav class="desktop">' + links + '</nav>' +
         '<div class="nav-actions">' +
+          '<div class="cross-links">' + crossLinksHtml + '</div>' +
           '<button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="打开菜单">' +
             '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>' +
           '</button>' +
         '</div>' +
       '</div>' +
-      '<div class="mobile-nav" id="mobileNav">' + links + '</div>';
+      '<div class="mobile-nav" id="mobileNav">' + links + '<div class="cross-links-mobile">' + crossLinksHtml + '</div></div>';
     document.body.prepend(header);
 
     var menuBtn = document.getElementById('mobileMenuBtn');
