@@ -21,6 +21,7 @@
     { href: 'https://fengzt13.github.io/metal-dashboard/', label: '金铜看板', key: 'metal' },
     { href: 'https://fengzt13.github.io/hbm-dashboard/', label: 'HBM看板', key: 'hbm' },
     { href: 'https://fengzt13.github.io/laolei-views/', label: '老雷观点', key: 'laolei' },
+    { href: 'https://fengzt13.github.io/jinjiancheng-skill/', label: '金渐成SKILL', key: 'jinjiancheng' },
   ];
   var crossLinksHtml = '<span class="cross-links-label">友情链接</span>' + SITES.filter(function (s) { return s.key !== 'nasdaq'; })
     .map(function (s) { return '<a class="cross-link" href="' + s.href + '">' + s.label + '</a>'; }).join('');
