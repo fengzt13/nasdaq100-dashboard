@@ -108,6 +108,20 @@ nav.desktop::-webkit-scrollbar { display: none; }
 
 .nav-actions { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
 
+/* 数据标注栏（数据更新操作时间 + 主要数据截至日期） */
+.data-stamp-bar {
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: 0.45rem 1.25rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem 1.1rem;
+  flex-wrap: wrap;
+}
+.data-stamp-bar .ds-item { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+.data-stamp-bar .ds-label { font-size: 0.68rem; font-weight: 600; color: var(--text-sub); }
+.data-stamp-bar .ds-value { font-size: 0.68rem; color: var(--muted); }
+
 /* 跨站链接（导航栏下方独立一行） */
 .cross-bar {
   max-width: 76rem;

@@ -26,12 +26,22 @@
   var crossLinksHtml = SITES.filter(function (s) { return s.key !== 'nasdaq'; })
     .map(function (s) { return '<a class="cross-link" href="' + s.href + '">' + s.label + '</a>'; }).join('');
 
+  function buildDataStampBar() {
+    var D = window.NDX_DATA || window.BEAR_DATA;
+    if (!D || !D.meta || !D.meta.dataStamp) return null;
+    var items = D.meta.dataStamp.map(function (s) {
+      return '<span class="ds-item"><span class="ds-label">' + Dash.esc(s.label) + '</span><span class="ds-value">' + Dash.esc(s.value) + '</span></span>';
+    }).join('');
+    return '<div class="data-stamp-bar">' + items + '</div>';
+  }
+
   function buildHeader(activeKey) {
     var header = document.createElement('header');
     var links = NAV.map(function (it) {
       var cls = it.key === activeKey ? ' nav-link active' : ' nav-link';
       return '<a class="' + cls + '" href="' + P + it.href + '">' + it.label + '</a>';
     }).join('');
+    var stampBar = buildDataStampBar();
     header.innerHTML =
       '<div class="nav-inner">' +
         '<a class="logo" href="' + P + 'index.html">' +
@@ -45,6 +55,7 @@
           '</button>' +
         '</div>' +
       '</div>' +
+      (stampBar ? stampBar : '') +
       '<div class="cross-bar"><span class="cross-links-label">友情链接</span>' + crossLinksHtml + '</div>' +
       '<div class="mobile-nav" id="mobileNav">' + links + '</div>';
     document.body.prepend(header);
@@ -55,12 +66,14 @@
   }
 
   function buildFooter() {
+    var D = window.NDX_DATA || window.BEAR_DATA;
+    var upd = (D && D.meta && D.meta.updated) ? D.meta.updated : '';
     var footer = document.createElement('footer');
     footer.innerHTML =
       '<div class="footer-inner">' +
         '<div class="footer-bottom">' +
           '<span>© 2026 纳指100大数据追踪看板 · 数据仅供研究参考，不构成投资建议</span>' +
-          '<span>更新：2026-08-31</span>' +
+          '<span>更新：' + Dash.esc(upd) + '</span>' +
         '</div>' +
       '</div>';
     document.body.appendChild(footer);

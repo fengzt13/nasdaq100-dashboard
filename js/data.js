@@ -1,23 +1,32 @@
 /* 纳指100大数据追踪看板 · 数据文件 v2.1.1 (2026-09-07) */
 window.NDX_DATA = {
- "meta": {
-  "title": "纳指100大数据追踪看板",
-  "subtitle": "Nasdaq-100 营收/利润/FCF/ROE/PE-TTM 全景",
-   "version": "2.1.1",
-   "updated": "2026-09-07",
-   "asOf": "2026-09-04",
-  "source": [
-   "SEC EDGAR XBRL：纳指100成分股财报（102家，10年年度数据）",
-   "stockanalysis.com：成分股季度财务（5年）与当前市值",
-   "Siblis Research：纳指100指数级 PE-TTM/EPS（季度）",
-   "新浪财经：纳指100日K线"
-  ],
-  "notes": [
-   "数据为成分股财报加总；Alphabet 按 GOOGL 单股计（剔除 GOOG 避免重复）。",
-   "2026年数据为YTD累计（截至最新已报告季度，月份范围标注），2025同期为可比口径。YTD不适用ROE计算。",
-   "SPCX(SpaceX) 为私有公司未纳入；个别ADR公司(ASML/ARM/PDD等)SEC数据有限，缺失处如实标注。"
-  ],
-  "mag7": [
+  "meta": {
+   "title": "纳指100大数据追踪看板",
+   "subtitle": "Nasdaq-100 营收/利润/FCF/ROE/PE-TTM 全景",
+    "version": "2.2.0",
+    "updated": "2026-09-21",
+    "asOf": "2026-09-04",
+   "source": [
+    "SEC EDGAR XBRL：纳指100成分股财报（102家，10年年度数据）",
+    "stockanalysis.com：成分股季度财务（5年）与当前市值",
+    "Siblis Research：纳指100指数级 PE-TTM/EPS（季度）",
+    "新浪财经：纳指100日K线"
+   ],
+   "notes": [
+    "数据为成分股财报加总；Alphabet 按 GOOGL 单股计（剔除 GOOG 避免重复）。",
+    "2026年数据为YTD累计（截至最新已报告季度，月份范围标注），2025同期为可比口径。YTD不适用ROE计算。",
+    "SPCX(SpaceX) 为私有公司未纳入；个别ADR公司(ASML/ARM/PDD等)SEC数据有限，缺失处如实标注。"
+   ],
+   "dataStamp": [
+    { "label": "数据更新操作时间", "value": "2026-09-21" },
+    { "label": "指数月线", "value": "截至2026-09（新浪财经日K）" },
+    { "label": "2026 YTD财务", "value": "截至2026年1-8月（成分股已报告季度累计）" },
+    { "label": "PE-TTM市值快照", "value": "截至2026-08-28（stockanalysis.com）" },
+    { "label": "Siblis官方PE", "value": "截至2026-08-31" },
+    { "label": "年度财务", "value": "完整年度至FY2025（SEC EDGAR）" },
+    { "label": "空头观点", "value": "收录至2026-09-07" }
+   ],
+   "mag7": [
    "AAPL",
    "MSFT",
    "NVDA",
