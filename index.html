@@ -136,7 +136,7 @@
       sub: '同比 ' + (ytd.niYoy != null ? Dash.fmtPct(ytd.niYoy) : '—') + ' · 覆盖' + ytd.count + '家' },
     { label: '2026 YTD FCF（截至' + ytd.labelShort + '）', value: (ytd.fcf / 1e8).toFixed(0) + '亿',
       sub: '同比 ' + (ytd.fcfYoy != null ? Dash.fmtPct(ytd.fcfYoy) : '—') + ' · 覆盖' + ytd.count + '家' },
-    { label: '成分股数量', value: '101', sub: '剔除 SPCX(私有) 与 GOOG 双股' }
+    { label: '成分股数量', value: '101', sub: '剔除 GOOG 双股；SPCX 已上市暂未纳入' }
   ];
   document.getElementById('metricCards').innerHTML = metricCards.map(function (c) {
     return '<div class="card card-hover">' +
